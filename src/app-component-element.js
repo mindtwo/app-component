@@ -15,7 +15,7 @@ export class AppComponentElement extends HTMLElement {
      * Init our app view, equal to mount
      */
     connectedCallback() {
-        EventDispatcher.dispatch('app-component-init', this.name);
+        EventDispatcher.dispatch('init', this.name);
 
         // create wrapper div
         const wrapper = document.createElement('div');
@@ -26,7 +26,7 @@ export class AppComponentElement extends HTMLElement {
 
         this.app = AppComponent.make(this.name, this.component);
 
-        EventDispatcher.dispatch('app-component-initialized', this.name);
+        EventDispatcher.dispatch('initialized', this.name);
 
         if (this.isAutoMount) {
             const { props } = this.getAttributes();

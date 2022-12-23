@@ -2,6 +2,7 @@ import pascalCase from 'just-pascal-case';
 import { EventDispatcher } from './lib/events';
 
 import { createApp } from 'vue';
+import { LocalStore } from './lib/local-store';
 
 export class AppComponent {
     /**
@@ -13,6 +14,43 @@ export class AppComponent {
     constructor(name, component) {
         this.name = name;
         this.component = component;
+
+        this.auth = new LocalStore('auth');
+    }
+
+    /**
+     * Log user in via an apps provider using app url using credentials as body
+     *
+     * @param {Object} credentials
+     */
+    async login(appUrl, credentials) {
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        const response = await fetch(`${appUrl}`, {
+            method: 'POST',
+            body: JSON.stringify(credentials),
+            headers,
+        });
+
+        const json = response.json();
+
+        for (const [key, value] of Object.entries(json)) {
+            this.auth[key] = value;
+        }
+
+        return json;
+    }
+
+    /**
+     * Set auth data for current user (we are already logged in via an apps provider)
+     *
+     * @param {Object} tokenData
+     */
+    setTokenData(tokenData) {
+        for (const [key, value] of Object.entries(tokenData)) {
+            this.auth[key] = value;
+        }
     }
 
     /**
@@ -21,7 +59,7 @@ export class AppComponent {
      * @param {Object} props
      */
     mount(props = {}) {
-        EventDispatcher.dispatch('app-component-beforemount', this.name);
+        EventDispatcher.dispatch('beforemount', this.name);
 
         this.vueApp = createApp(this.component, props);
         // register components
@@ -40,7 +78,7 @@ export class AppComponent {
 
         this.vueApp.mount(this.wrapper);
 
-        EventDispatcher.dispatch('app-component-mounted', this.name);
+        EventDispatcher.dispatch('mounted', this.name);
     }
 
     /**
