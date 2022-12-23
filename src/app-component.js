@@ -1,87 +1,80 @@
+import pascalCase from 'just-pascal-case';
+import { EventDispatcher } from './lib/events';
+
 import { createApp } from 'vue';
-// import { AppBugsnag } from '@/helper/bugsnag';
 
-export class AppComponent extends HTMLElement {
-
-    constructor(name, component) {
-        super();
-
-        this.name = name;
-
-        this.component = component;
-
-        this.app = null;
-    }
-
+export class AppComponent {
     /**
-     * Init our app view, equal to mount
+     * Create global app helper
+     *
+     * @param {string} name - helper name
+     * @param {*} component - helper name
      */
-    connectedCallback() {
-        // create wrapper div
-        const wrapper = document.createElement('div');
-        wrapper.id = this.wrapperId;
-        wrapper.textContent = 'Loading...';
-
-        // add to element DOM
-        this.appendChild(wrapper);
-
-        this.mountApp();
+    constructor(name, component) {
+        this.name = name;
+        this.component = component;
     }
 
     /**
      * Mount our Course Builder Vue App
+     *
+     * @param {Object} props
      */
-    mountApp() {
-        // check if we have views
-        if (this.app) {
-            this.app.mount(this.wrapper);
+    mount(props = {}) {
+        EventDispatcher.dispatch('app-component-beforemount', this.name);
+
+        this.vueApp = createApp(this.component, props);
+        // register components
+        if (Object.keys(this.components).length) {
+            Object.entries(this.components).forEach(([name, component]) => {
+                this.vueApp.component(name, component);
+            });
         }
 
-        const { props, attrs } = this.getAttributes();
+        // register plugins
+        if (Object.keys(this.plugins).length) {
+            Object.entries(this.plugins).forEach(([plugin, options]) => {
+                this.vueApp.use(plugin, options);
+            });
+        }
 
-        this.app = createApp(this.component, props);
+        this.vueApp.mount(this.wrapper);
 
-        // AppBugsnag.start();
-        // AppBugsnag.vue(this.app);
-
-        this.registerAppComponents(this.app);
-        this.registerAppPlugins(this.app);
-
-        this.app.mount(this.wrapper);
+        EventDispatcher.dispatch('app-component-mounted', this.name);
     }
 
     /**
-     * Register components, that are not commonly used
-     *
-     * @param app
+     * Unmount component by clearing its wrapper
      */
-    registerAppComponents(app) {
-        // override to register more components
+    unmount() {
+        this.wrapper.innerHTML = '';
     }
 
     /**
-     * Register components, that are not commonly used
+     * Register components, that are used by vue
      *
-     * @param app
+     * @param {Object} components
      */
-     registerAppPlugins(app) {
-        // override to register more plugins
+    registerComponents(components) {
+        this.components = components;
+
+        return this;
     }
 
-    getAttributes() {
-        // TODO filter in attributes and custom values
-        const props = {};
-        const attrs = {};
-        for(const attr of this.attributes) {
-            props[attr.name] = attr.value;
-        }
+    /**
+     * Register plugins, that are used by vue
+     *
+     * @param {Object} plugins
+     */
+    registerPlugins(plugins) {
+        this.plugins = plugins;
 
-        return {
-            props,
-            attrs,
-        };
+        return this;
     }
 
+    /**
+     * @returns {string}
+     */
     get wrapperId() {
         return `${this.name}-app`;
     }
@@ -89,10 +82,24 @@ export class AppComponent extends HTMLElement {
     /**
      * Helper to get the mounted wrapper element
      *
-     * @return {Element}
+     * @returns {Element}
      */
     get wrapper() {
         return document.querySelector(`#${this.wrapperId}`);
     }
 
+    /**
+     *
+     * @param {string} name
+     * @param {*} component
+     * @returns {this}
+     */
+    static make(name, component) {
+        const pascalName = pascalCase(name);
+
+        const appComponent = new this(name, component);
+
+        window[pascalName] = appComponent;
+        return appComponent;
+    }
 }

@@ -1,5 +1,3 @@
-import { AppComponent } from './app-component';
+import { AppComponentElement } from './app-component-element';
 
-export {
-    AppComponent,
-};
+export { AppComponentElement };
