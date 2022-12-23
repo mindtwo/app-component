@@ -25,14 +25,14 @@ export class AppComponent {
 
         this.vueApp = createApp(this.component, props);
         // register components
-        if (Object.keys(this.components).length) {
+        if (this.components && Object.keys(this.components).length) {
             Object.entries(this.components).forEach(([name, component]) => {
                 this.vueApp.component(name, component);
             });
         }
 
         // register plugins
-        if (Object.keys(this.plugins).length) {
+        if (this.plugins && Object.keys(this.plugins).length) {
             Object.entries(this.plugins).forEach(([plugin, options]) => {
                 this.vueApp.use(plugin, options);
             });

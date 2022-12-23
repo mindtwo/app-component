@@ -46,7 +46,7 @@ var AppComponent = /*#__PURE__*/function () {
       _events.EventDispatcher.dispatch('app-component-beforemount', this.name);
       this.vueApp = (0, _vue.createApp)(this.component, props);
       // register components
-      if (Object.keys(this.components).length) {
+      if (this.components && Object.keys(this.components).length) {
         Object.entries(this.components).forEach(function (_ref) {
           var _ref2 = _slicedToArray(_ref, 2),
             name = _ref2[0],
@@ -56,7 +56,7 @@ var AppComponent = /*#__PURE__*/function () {
       }
 
       // register plugins
-      if (Object.keys(this.plugins).length) {
+      if (this.plugins && Object.keys(this.plugins).length) {
         Object.entries(this.plugins).forEach(function (_ref3) {
           var _ref4 = _slicedToArray(_ref3, 2),
             plugin = _ref4[0],

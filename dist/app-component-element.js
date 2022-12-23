@@ -51,7 +51,6 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
       // create wrapper div
       var wrapper = document.createElement('div');
       wrapper.id = this.wrapperId;
-      wrapper.textContent = 'Loading...';
 
       // add to element DOM
       this.appendChild(wrapper);
@@ -87,12 +86,15 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
             continue;
           }
           props[attr.name] = attr.value;
-          this.removeAttribute(attr.name);
         }
       } catch (err) {
         _iterator.e(err);
       } finally {
         _iterator.f();
+      }
+      for (var _i = 0, _Object$keys = Object.keys(props); _i < _Object$keys.length; _i++) {
+        var prop = _Object$keys[_i];
+        this.removeAttribute(prop);
       }
       return {
         props: props,

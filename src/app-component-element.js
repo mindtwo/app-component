@@ -20,7 +20,6 @@ export class AppComponentElement extends HTMLElement {
         // create wrapper div
         const wrapper = document.createElement('div');
         wrapper.id = this.wrapperId;
-        wrapper.textContent = 'Loading...';
 
         // add to element DOM
         this.appendChild(wrapper);
@@ -31,7 +30,6 @@ export class AppComponentElement extends HTMLElement {
 
         if (this.isAutoMount) {
             const { props } = this.getAttributes();
-
             this.app.mount(props);
         }
     }
@@ -56,7 +54,10 @@ export class AppComponentElement extends HTMLElement {
             }
 
             props[attr.name] = attr.value;
-            this.removeAttribute(attr.name);
+        }
+
+        for (const prop of Object.keys(props)) {
+            this.removeAttribute(prop);
         }
 
         return {
