@@ -38,27 +38,11 @@ var AppComponent = /*#__PURE__*/function () {
   }
 
   /**
-   * Register global injection inside app
+   * Mount our Course Builder Vue App
    *
-   * @param {string} key
-   * @param {Object} value
+   * @param {Object} props
    */
   _createClass(AppComponent, [{
-    key: "provide",
-    value: function provide(key, value) {
-      if (!this._provides) {
-        this._provides = {};
-      }
-      this._provides[key] = value;
-      return this;
-    }
-
-    /**
-     * Mount our Course Builder Vue App
-     *
-     * @param {Object} props
-     */
-  }, {
     key: "mount",
     value: function mount() {
       var _this = this,
@@ -84,8 +68,8 @@ var AppComponent = /*#__PURE__*/function () {
       }
 
       // register components
-      if (this._provides && Object.keys(this._provides).length) {
-        Object.entries(this._provides).forEach(function (_ref3) {
+      if (this.provides && Object.keys(this.provides).length) {
+        Object.entries(this.provides).forEach(function (_ref3) {
           var _ref4 = _slicedToArray(_ref3, 2),
             key = _ref4[0],
             value = _ref4[1];
@@ -130,6 +114,22 @@ var AppComponent = /*#__PURE__*/function () {
         this.plugins = [];
       }
       (_this$plugins2 = this.plugins).push.apply(_this$plugins2, _toConsumableArray(plugins));
+      return this;
+    }
+
+    /**
+     * Register global injection inside app
+     *
+     * @param {string} key
+     * @param {Object} value
+     */
+  }, {
+    key: "registerProvide",
+    value: function registerProvide(key, value) {
+      if (!this.provides) {
+        this.provides = {};
+      }
+      this.provides[key] = value;
       return this;
     }
 

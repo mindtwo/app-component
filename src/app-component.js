@@ -16,22 +16,6 @@ export class AppComponent {
     }
 
     /**
-     * Register global injection inside app
-     *
-     * @param {string} key
-     * @param {Object} value
-     */
-    provide(key, value) {
-        if (!this._provides) {
-            this._provides = {};
-        }
-
-        this._provides[key] = value;
-
-        return this;
-    }
-
-    /**
      * Mount our Course Builder Vue App
      *
      * @param {Object} props
@@ -55,8 +39,8 @@ export class AppComponent {
         }
 
         // register components
-        if (this._provides && Object.keys(this._provides).length) {
-            Object.entries(this._provides).forEach(([key, value]) => {
+        if (this.provides && Object.keys(this.provides).length) {
+            Object.entries(this.provides).forEach(([key, value]) => {
                 this.vueApp.provide(key, value);
             });
         }
@@ -95,6 +79,22 @@ export class AppComponent {
         }
 
         this.plugins.push(...plugins);
+
+        return this;
+    }
+
+    /**
+     * Register global injection inside app
+     *
+     * @param {string} key
+     * @param {Object} value
+     */
+    registerProvide(key, value) {
+        if (!this.provides) {
+            this.provides = {};
+        }
+
+        this.provides[key] = value;
 
         return this;
     }
