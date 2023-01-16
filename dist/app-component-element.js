@@ -46,7 +46,7 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
   _createClass(AppComponentElement, [{
     key: "connectedCallback",
     value: function connectedCallback() {
-      _events.EventDispatcher.dispatch('app-component-init', this.name);
+      _events.EventDispatcher.dispatch('init', this.name);
 
       // create wrapper div
       var wrapper = document.createElement('div');
@@ -55,7 +55,7 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
       // add to element DOM
       this.appendChild(wrapper);
       this.app = _appComponent.AppComponent.make(this.name, this.component);
-      _events.EventDispatcher.dispatch('app-component-initialized', this.name);
+      _events.EventDispatcher.dispatch('initialized', this.name);
       if (this.isAutoMount) {
         var _this$getAttributes = this.getAttributes(),
           props = _this$getAttributes.props;

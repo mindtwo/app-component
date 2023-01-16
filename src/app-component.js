@@ -2,7 +2,6 @@ import pascalCase from 'just-pascal-case';
 import { EventDispatcher } from './lib/events';
 
 import { createApp } from 'vue';
-import { LocalStore } from './lib/local-store';
 
 export class AppComponent {
     /**
@@ -14,43 +13,22 @@ export class AppComponent {
     constructor(name, component) {
         this.name = name;
         this.component = component;
-
-        this.auth = new LocalStore('auth');
     }
 
     /**
-     * Log user in via an apps provider using app url using credentials as body
+     * Register global injection inside app
      *
-     * @param {Object} credentials
+     * @param {string} key
+     * @param {Object} value
      */
-    async login(appUrl, credentials) {
-        const headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-
-        const response = await fetch(`${appUrl}`, {
-            method: 'POST',
-            body: JSON.stringify(credentials),
-            headers,
-        });
-
-        const json = response.json();
-
-        for (const [key, value] of Object.entries(json)) {
-            this.auth[key] = value;
+    provide(key, value) {
+        if (!this._provides) {
+            this._provides = {};
         }
 
-        return json;
-    }
+        this._provides[key] = value;
 
-    /**
-     * Set auth data for current user (we are already logged in via an apps provider)
-     *
-     * @param {Object} tokenData
-     */
-    setTokenData(tokenData) {
-        for (const [key, value] of Object.entries(tokenData)) {
-            this.auth[key] = value;
-        }
+        return this;
     }
 
     /**
@@ -70,9 +48,16 @@ export class AppComponent {
         }
 
         // register plugins
-        if (this.plugins && Object.keys(this.plugins).length) {
-            Object.entries(this.plugins).forEach(([plugin, options]) => {
-                this.vueApp.use(plugin, options);
+        if (this.plugins?.length) {
+            this.plugins.forEach((obj) => {
+                this.vueApp.use(obj.plugin, obj.options);
+            });
+        }
+
+        // register components
+        if (this._provides && Object.keys(this._provides).length) {
+            Object.entries(this._provides).forEach(([key, value]) => {
+                this.vueApp.provide(key, value);
             });
         }
 
@@ -102,10 +87,33 @@ export class AppComponent {
     /**
      * Register plugins, that are used by vue
      *
-     * @param {Object} plugins
+     * @param {Array} plugins
      */
     registerPlugins(plugins) {
-        this.plugins = plugins;
+        if (!this.plugins) {
+            this.plugins = [];
+        }
+
+        this.plugins.push(...plugins);
+
+        return this;
+    }
+
+    /**
+     * Register plugins, that are used by vue
+     *
+     * @param {Object} plugin
+     * @param {Object} options
+     */
+    registerPlugin(plugin, options) {
+        if (!this.plugins) {
+            this.plugins = [];
+        }
+
+        this.plugins.push({
+            plugin,
+            options,
+        });
 
         return this;
     }

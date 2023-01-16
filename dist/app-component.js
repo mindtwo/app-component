@@ -9,6 +9,10 @@ var _events = require("./lib/events");
 var _vue = require("vue");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -34,16 +38,33 @@ var AppComponent = /*#__PURE__*/function () {
   }
 
   /**
-   * Mount our Course Builder Vue App
+   * Register global injection inside app
    *
-   * @param {Object} props
+   * @param {string} key
+   * @param {Object} value
    */
   _createClass(AppComponent, [{
+    key: "provide",
+    value: function provide(key, value) {
+      if (!this._provides) {
+        this._provides = {};
+      }
+      this._provides[key] = value;
+      return this;
+    }
+
+    /**
+     * Mount our Course Builder Vue App
+     *
+     * @param {Object} props
+     */
+  }, {
     key: "mount",
     value: function mount() {
-      var _this = this;
+      var _this = this,
+        _this$plugins;
       var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      _events.EventDispatcher.dispatch('app-component-beforemount', this.name);
+      _events.EventDispatcher.dispatch('beforemount', this.name);
       this.vueApp = (0, _vue.createApp)(this.component, props);
       // register components
       if (this.components && Object.keys(this.components).length) {
@@ -56,16 +77,23 @@ var AppComponent = /*#__PURE__*/function () {
       }
 
       // register plugins
-      if (this.plugins && Object.keys(this.plugins).length) {
-        Object.entries(this.plugins).forEach(function (_ref3) {
+      if ((_this$plugins = this.plugins) !== null && _this$plugins !== void 0 && _this$plugins.length) {
+        this.plugins.forEach(function (obj) {
+          _this.vueApp.use(obj.plugin, obj.options);
+        });
+      }
+
+      // register components
+      if (this._provides && Object.keys(this._provides).length) {
+        Object.entries(this._provides).forEach(function (_ref3) {
           var _ref4 = _slicedToArray(_ref3, 2),
-            plugin = _ref4[0],
-            options = _ref4[1];
-          _this.vueApp.use(plugin, options);
+            key = _ref4[0],
+            value = _ref4[1];
+          _this.vueApp.provide(key, value);
         });
       }
       this.vueApp.mount(this.wrapper);
-      _events.EventDispatcher.dispatch('app-component-mounted', this.name);
+      _events.EventDispatcher.dispatch('mounted', this.name);
     }
 
     /**
@@ -92,12 +120,35 @@ var AppComponent = /*#__PURE__*/function () {
     /**
      * Register plugins, that are used by vue
      *
-     * @param {Object} plugins
+     * @param {Array} plugins
      */
   }, {
     key: "registerPlugins",
     value: function registerPlugins(plugins) {
-      this.plugins = plugins;
+      var _this$plugins2;
+      if (!this.plugins) {
+        this.plugins = [];
+      }
+      (_this$plugins2 = this.plugins).push.apply(_this$plugins2, _toConsumableArray(plugins));
+      return this;
+    }
+
+    /**
+     * Register plugins, that are used by vue
+     *
+     * @param {Object} plugin
+     * @param {Object} options
+     */
+  }, {
+    key: "registerPlugin",
+    value: function registerPlugin(plugin, options) {
+      if (!this.plugins) {
+        this.plugins = [];
+      }
+      this.plugins.push({
+        plugin: plugin,
+        options: options
+      });
       return this;
     }
 
