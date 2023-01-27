@@ -35,6 +35,7 @@ var AppComponent = /*#__PURE__*/function () {
     _classCallCheck(this, AppComponent);
     this.name = name;
     this.component = component;
+    this.hooks = {};
   }
 
   /**
@@ -51,7 +52,7 @@ var AppComponent = /*#__PURE__*/function () {
           name = _Object$entries$_i[0],
           value = _Object$entries$_i[1];
         if (name.match(/on[A-Z][a-z]/)) {
-          this.hooks = value;
+          this.hooks[name] = value;
           continue;
         }
         parsed[name] = value;
@@ -71,7 +72,12 @@ var AppComponent = /*#__PURE__*/function () {
         _this$plugins;
       var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       props = this.parseProps(props);
-      _events.EventDispatcher.dispatch('beforemount', this.name);
+      if (this.hooks['onBeforeMount'] && typeof this.hooks['onBeforeMount'] === 'function') {
+        this.hooks['onBeforeMount'](this.name);
+      }
+
+      // EventDispatcher.dispatch('beforemount', this.name);
+
       this.vueApp = (0, _vue.createApp)(this.component, props);
       // register components
       if (this.components && Object.keys(this.components).length) {
@@ -100,7 +106,10 @@ var AppComponent = /*#__PURE__*/function () {
         });
       }
       this.vueApp.mount(this.wrapper);
-      _events.EventDispatcher.dispatch('mounted', this.name);
+      if (this.hooks['onMounted'] && typeof this.hooks['onMounted'] === 'function') {
+        this.hooks['onMounted'](this.name);
+      }
+      // EventDispatcher.dispatch('mounted', this.name);
     }
 
     /**

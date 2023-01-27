@@ -41,13 +41,13 @@ export class EventDispatcher {
         EventDispatcher._instance = this;
     }
 
-    static dispatch(eventName, componentName) {
+    static dispatch(eventName, component) {
         const instance = new EventDispatcher();
 
-        instance._dispatch(eventName, componentName);
+        instance._dispatch(eventName, component.name, component.eventbus);
     }
 
-    _dispatch(eventName, componentName) {
+    _dispatch(eventName, componentName, eventbus) {
         let event;
         if (eventName === 'beforemount') {
             event = new AppComponentBeforemount(componentName);
@@ -63,6 +63,11 @@ export class EventDispatcher {
 
         if (eventName === 'mounted') {
             event = new AppComponentMounted(componentName);
+        }
+
+        if (eventbus && eventbus.trigger) {
+            eventbus.trigger(eventName, event);
+            return;
         }
 
         window.dispatchEvent(event);

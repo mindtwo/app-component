@@ -13,25 +13,9 @@ export class AppComponent {
     constructor(name, component) {
         this.name = name;
         this.component = component;
-    }
 
-    /**
-     * Get props and attributes for component
-     *
-     * @returns {void}
-     */
-    parseProps(props) {
-        const parsed = {};
-        for (const [name, value] of Object.entries(props)) {
-            if (name.match(/on[A-Z][a-z]/)) {
-                this.hooks = value;
-                continue;
-            }
-
-            parsed[name] = value;
-        }
-
-        return parsed;
+        // app components eventBus
+        this.eventbus = null;
     }
 
     /**
@@ -42,7 +26,7 @@ export class AppComponent {
     mount(props = {}) {
         props = this.parseProps(props);
 
-        EventDispatcher.dispatch('beforemount', this.name);
+        EventDispatcher.dispatch('beforemount', this);
 
         this.vueApp = createApp(this.component, props);
         // register components
@@ -68,7 +52,7 @@ export class AppComponent {
 
         this.vueApp.mount(this.wrapper);
 
-        EventDispatcher.dispatch('mounted', this.name);
+        EventDispatcher.dispatch('mounted', this);
     }
 
     /**
@@ -101,6 +85,15 @@ export class AppComponent {
 
         this.plugins.push(...plugins);
 
+        return this;
+    }
+
+    /**
+     * Register EventBus
+     *
+     * @param {Object} eventbus
+     */
+    registerEventbus(eventbus) {
         return this;
     }
 

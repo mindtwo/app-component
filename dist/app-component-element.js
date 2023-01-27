@@ -37,6 +37,9 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
     _this.name = name;
     _this.component = component;
     _this.app = null;
+    var _this$getAttributes = _this.getAttributes(),
+      hooks = _this$getAttributes.hooks;
+    console.log(hooks);
     return _this;
   }
 
@@ -46,9 +49,9 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
   _createClass(AppComponentElement, [{
     key: "connectedCallback",
     value: function connectedCallback() {
-      var _this$getAttributes = this.getAttributes(),
-        props = _this$getAttributes.props,
-        hooks = _this$getAttributes.hooks;
+      var _this$getAttributes2 = this.getAttributes(),
+        props = _this$getAttributes2.props,
+        hooks = _this$getAttributes2.hooks;
       console.log(hooks);
       _events.EventDispatcher.dispatch('init', this.name);
 
@@ -84,6 +87,7 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
           if (attr.name === 'mount') {
             continue;
           }
+          console.log(attr.name);
           if (attr.name.match(/on[A-Z][a-z]/)) {
             hooks[attr.name] = attr.value;
             continue;
@@ -94,14 +98,14 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
           }
           props[attr.name] = attr.value;
         }
+
+        // for (const prop of Object.keys(props)) {
+        //     this.removeAttribute(prop);
+        // }
       } catch (err) {
         _iterator.e(err);
       } finally {
         _iterator.f();
-      }
-      for (var _i = 0, _Object$keys = Object.keys(props); _i < _Object$keys.length; _i++) {
-        var prop = _Object$keys[_i];
-        this.removeAttribute(prop);
       }
       return {
         props: props,

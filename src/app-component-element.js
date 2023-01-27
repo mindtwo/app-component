@@ -15,10 +15,8 @@ export class AppComponentElement extends HTMLElement {
      * Init our app view, equal to mount
      */
     connectedCallback() {
-        const { props, hooks } = this.getAttributes();
-
-        console.log(hooks);
-        EventDispatcher.dispatch('init', this.name);
+        // disable init start
+        // EventDispatcher.dispatch('init', this.name);
 
         // create wrapper div
         const wrapper = document.createElement('div');
@@ -29,9 +27,10 @@ export class AppComponentElement extends HTMLElement {
 
         this.app = AppComponent.make(this.name, this.component);
 
-        EventDispatcher.dispatch('initialized', this.name);
+        EventDispatcher.dispatch('initialized', this.app);
 
         if (this.isAutoMount) {
+            const { props } = this.getAttributes();
             this.app.mount(props);
         }
     }
@@ -44,15 +43,9 @@ export class AppComponentElement extends HTMLElement {
     getAttributes() {
         const props = {};
         const attrs = {};
-        const hooks = {};
 
         for (const attr of this.attributes) {
-            if (attr.name === 'mount') {
-                continue;
-            }
-
-            if (attr.name.match(/on[A-Z][a-z]/)) {
-                hooks[attr.name] = attr.value;
+            if (attr.name === 'auto-mount') {
                 continue;
             }
 
@@ -71,7 +64,6 @@ export class AppComponentElement extends HTMLElement {
         return {
             props,
             attrs,
-            hooks,
         };
     }
 
@@ -81,7 +73,7 @@ export class AppComponentElement extends HTMLElement {
      * @returns {boolean}
      */
     get isAutoMount() {
-        return this.hasAttribute('mount');
+        return this.hasAttribute('auto-mount');
     }
 
     /**
