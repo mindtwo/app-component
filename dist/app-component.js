@@ -129,6 +129,7 @@ var AppComponent = /*#__PURE__*/function () {
   }, {
     key: "registerEventbus",
     value: function registerEventbus(eventbus) {
+      this.eventbus = eventbus;
       return this;
     }
 

@@ -94,6 +94,8 @@ export class AppComponent {
      * @param {Object} eventbus
      */
     registerEventbus(eventbus) {
+        this.eventbus = eventbus;
+
         return this;
     }
 

@@ -36,7 +36,7 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
     _this = _super.call(this);
     _this.name = name;
     _this.component = component;
-    _this.app = null;
+    _this.app = _appComponent.AppComponent.make(_this.name, _this.component);
     return _this;
   }
 
@@ -55,7 +55,6 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
 
       // add to element DOM
       this.appendChild(wrapper);
-      this.app = _appComponent.AppComponent.make(this.name, this.component);
       _events.EventDispatcher.dispatch('initialized', this.app);
       if (this.isAutoMount) {
         var _this$getAttributes = this.getAttributes(),

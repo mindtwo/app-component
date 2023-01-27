@@ -8,7 +8,8 @@ export class AppComponentElement extends HTMLElement {
 
         this.name = name;
         this.component = component;
-        this.app = null;
+
+        this.app = AppComponent.make(this.name, this.component);
     }
 
     /**
@@ -24,8 +25,6 @@ export class AppComponentElement extends HTMLElement {
 
         // add to element DOM
         this.appendChild(wrapper);
-
-        this.app = AppComponent.make(this.name, this.component);
 
         EventDispatcher.dispatch('initialized', this.app);
 
