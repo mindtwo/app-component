@@ -51,7 +51,6 @@ var AppComponent = /*#__PURE__*/function () {
       var _this = this,
         _this$plugins;
       var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      props = this.parseProps(props);
       _events.EventDispatcher.dispatch('beforemount', this);
       this.vueApp = (0, _vue.createApp)(this.component, props);
       // register components

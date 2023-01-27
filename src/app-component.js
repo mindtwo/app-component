@@ -24,8 +24,6 @@ export class AppComponent {
      * @param {Object} props
      */
     mount(props = {}) {
-        props = this.parseProps(props);
-
         EventDispatcher.dispatch('beforemount', this);
 
         this.vueApp = createApp(this.component, props);
