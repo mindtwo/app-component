@@ -28,7 +28,26 @@ class AppComponentMounted extends Event {
 }
 
 export class EventDispatcher {
+    constructor() {
+        // required when used in nuxt context
+        if (!window) {
+            return {};
+        }
+
+        if (EventDispatcher._instance) {
+            return EventDispatcher._instance;
+        }
+
+        EventDispatcher._instance = this;
+    }
+
     static dispatch(eventName, componentName) {
+        const instance = new EventDispatcher();
+
+        instance._dispatch(eventName, componentName);
+    }
+
+    _dispatch(eventName, componentName) {
         let event;
         if (eventName === 'beforemount') {
             event = new AppComponentBeforemount(componentName);

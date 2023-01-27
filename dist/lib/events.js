@@ -71,10 +71,18 @@ var AppComponentMounted = /*#__PURE__*/function (_Event4) {
 var EventDispatcher = /*#__PURE__*/function () {
   function EventDispatcher() {
     _classCallCheck(this, EventDispatcher);
+    // required when used in nuxt context
+    if (!window) {
+      return {};
+    }
+    if (EventDispatcher._instance) {
+      return EventDispatcher._instance;
+    }
+    EventDispatcher._instance = this;
   }
-  _createClass(EventDispatcher, null, [{
-    key: "dispatch",
-    value: function dispatch(eventName, componentName) {
+  _createClass(EventDispatcher, [{
+    key: "_dispatch",
+    value: function _dispatch(eventName, componentName) {
       var event;
       if (eventName === 'beforemount') {
         event = new AppComponentBeforemount(componentName);
@@ -89,6 +97,12 @@ var EventDispatcher = /*#__PURE__*/function () {
         event = new AppComponentMounted(componentName);
       }
       window.dispatchEvent(event);
+    }
+  }], [{
+    key: "dispatch",
+    value: function dispatch(eventName, componentName) {
+      var instance = new EventDispatcher();
+      instance._dispatch(eventName, componentName);
     }
   }]);
   return EventDispatcher;
