@@ -16,11 +16,32 @@ export class AppComponent {
     }
 
     /**
+     * Get props and attributes for component
+     *
+     * @returns {void}
+     */
+    parseProps(props) {
+        const parsed = {};
+        for (const [name, value] of Object.entries(props)) {
+            if (name.match(/on[A-Z][a-z]/)) {
+                this.hooks = value;
+                continue;
+            }
+
+            parsed[name] = value;
+        }
+
+        return parsed;
+    }
+
+    /**
      * Mount our Course Builder Vue App
      *
      * @param {Object} props
      */
     mount(props = {}) {
+        props = this.parseProps(props);
+
         EventDispatcher.dispatch('beforemount', this.name);
 
         this.vueApp = createApp(this.component, props);

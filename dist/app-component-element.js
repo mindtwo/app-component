@@ -46,6 +46,10 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
   _createClass(AppComponentElement, [{
     key: "connectedCallback",
     value: function connectedCallback() {
+      var _this$getAttributes = this.getAttributes(),
+        props = _this$getAttributes.props,
+        hooks = _this$getAttributes.hooks;
+      console.log(hooks);
       _events.EventDispatcher.dispatch('init', this.name);
 
       // create wrapper div
@@ -57,8 +61,6 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
       this.app = _appComponent.AppComponent.make(this.name, this.component);
       _events.EventDispatcher.dispatch('initialized', this.name);
       if (this.isAutoMount) {
-        var _this$getAttributes = this.getAttributes(),
-          props = _this$getAttributes.props;
         this.app.mount(props);
       }
     }
@@ -73,12 +75,17 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
     value: function getAttributes() {
       var props = {};
       var attrs = {};
+      var hooks = {};
       var _iterator = _createForOfIteratorHelper(this.attributes),
         _step;
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var attr = _step.value;
           if (attr.name === 'mount') {
+            continue;
+          }
+          if (attr.name.match(/on[A-Z][a-z]/)) {
+            hooks[attr.name] = attr.value;
             continue;
           }
           if (_attributeList["default"].includes(attr.name)) {
@@ -98,7 +105,8 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
       }
       return {
         props: props,
-        attrs: attrs
+        attrs: attrs,
+        hooks: hooks
       };
     }
 

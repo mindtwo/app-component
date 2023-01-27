@@ -38,16 +38,39 @@ var AppComponent = /*#__PURE__*/function () {
   }
 
   /**
-   * Mount our Course Builder Vue App
+   * Get props and attributes for component
    *
-   * @param {Object} props
+   * @returns {void}
    */
   _createClass(AppComponent, [{
+    key: "parseProps",
+    value: function parseProps(props) {
+      var parsed = {};
+      for (var _i = 0, _Object$entries = Object.entries(props); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          name = _Object$entries$_i[0],
+          value = _Object$entries$_i[1];
+        if (name.match(/on[A-Z][a-z]/)) {
+          this.hooks = value;
+          continue;
+        }
+        parsed[name] = value;
+      }
+      return parsed;
+    }
+
+    /**
+     * Mount our Course Builder Vue App
+     *
+     * @param {Object} props
+     */
+  }, {
     key: "mount",
     value: function mount() {
       var _this = this,
         _this$plugins;
       var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      props = this.parseProps(props);
       _events.EventDispatcher.dispatch('beforemount', this.name);
       this.vueApp = (0, _vue.createApp)(this.component, props);
       // register components
