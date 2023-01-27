@@ -82,7 +82,7 @@ var EventDispatcher = /*#__PURE__*/function () {
   }
   _createClass(EventDispatcher, [{
     key: "_dispatch",
-    value: function _dispatch(eventName, componentName) {
+    value: function _dispatch(eventName, componentName, eventbus) {
       var event;
       if (eventName === 'beforemount') {
         event = new AppComponentBeforemount(componentName);
@@ -96,13 +96,17 @@ var EventDispatcher = /*#__PURE__*/function () {
       if (eventName === 'mounted') {
         event = new AppComponentMounted(componentName);
       }
+      if (eventbus && eventbus.trigger) {
+        eventbus.trigger(eventName, event);
+        return;
+      }
       window.dispatchEvent(event);
     }
   }], [{
     key: "dispatch",
-    value: function dispatch(eventName, componentName) {
+    value: function dispatch(eventName, component) {
       var instance = new EventDispatcher();
-      instance._dispatch(eventName, componentName);
+      instance._dispatch(eventName, component.name, component.eventbus);
     }
   }]);
   return EventDispatcher;

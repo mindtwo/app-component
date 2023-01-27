@@ -35,49 +35,24 @@ var AppComponent = /*#__PURE__*/function () {
     _classCallCheck(this, AppComponent);
     this.name = name;
     this.component = component;
-    this.hooks = {};
+
+    // app components eventBus
+    this.eventbus = null;
   }
 
   /**
-   * Get props and attributes for component
+   * Mount our Course Builder Vue App
    *
-   * @returns {void}
+   * @param {Object} props
    */
   _createClass(AppComponent, [{
-    key: "parseProps",
-    value: function parseProps(props) {
-      var parsed = {};
-      for (var _i = 0, _Object$entries = Object.entries(props); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-          name = _Object$entries$_i[0],
-          value = _Object$entries$_i[1];
-        if (name.match(/on[A-Z][a-z]/)) {
-          this.hooks[name] = value;
-          continue;
-        }
-        parsed[name] = value;
-      }
-      return parsed;
-    }
-
-    /**
-     * Mount our Course Builder Vue App
-     *
-     * @param {Object} props
-     */
-  }, {
     key: "mount",
     value: function mount() {
       var _this = this,
         _this$plugins;
       var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       props = this.parseProps(props);
-      if (this.hooks['onBeforeMount'] && typeof this.hooks['onBeforeMount'] === 'function') {
-        this.hooks['onBeforeMount'](this.name);
-      }
-
-      // EventDispatcher.dispatch('beforemount', this.name);
-
+      _events.EventDispatcher.dispatch('beforemount', this);
       this.vueApp = (0, _vue.createApp)(this.component, props);
       // register components
       if (this.components && Object.keys(this.components).length) {
@@ -106,10 +81,7 @@ var AppComponent = /*#__PURE__*/function () {
         });
       }
       this.vueApp.mount(this.wrapper);
-      if (this.hooks['onMounted'] && typeof this.hooks['onMounted'] === 'function') {
-        this.hooks['onMounted'](this.name);
-      }
-      // EventDispatcher.dispatch('mounted', this.name);
+      _events.EventDispatcher.dispatch('mounted', this);
     }
 
     /**
@@ -146,6 +118,17 @@ var AppComponent = /*#__PURE__*/function () {
         this.plugins = [];
       }
       (_this$plugins2 = this.plugins).push.apply(_this$plugins2, _toConsumableArray(plugins));
+      return this;
+    }
+
+    /**
+     * Register EventBus
+     *
+     * @param {Object} eventbus
+     */
+  }, {
+    key: "registerEventbus",
+    value: function registerEventbus(eventbus) {
       return this;
     }
 

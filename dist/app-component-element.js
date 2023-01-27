@@ -37,9 +37,6 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
     _this.name = name;
     _this.component = component;
     _this.app = null;
-    var _this$getAttributes = _this.getAttributes(),
-      hooks = _this$getAttributes.hooks;
-    console.log(hooks);
     return _this;
   }
 
@@ -49,11 +46,8 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
   _createClass(AppComponentElement, [{
     key: "connectedCallback",
     value: function connectedCallback() {
-      var _this$getAttributes2 = this.getAttributes(),
-        props = _this$getAttributes2.props,
-        hooks = _this$getAttributes2.hooks;
-      console.log(hooks);
-      _events.EventDispatcher.dispatch('init', this.name);
+      // disable init start
+      // EventDispatcher.dispatch('init', this.name);
 
       // create wrapper div
       var wrapper = document.createElement('div');
@@ -62,8 +56,10 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
       // add to element DOM
       this.appendChild(wrapper);
       this.app = _appComponent.AppComponent.make(this.name, this.component);
-      _events.EventDispatcher.dispatch('initialized', this.name);
+      _events.EventDispatcher.dispatch('initialized', this.app);
       if (this.isAutoMount) {
+        var _this$getAttributes = this.getAttributes(),
+          props = _this$getAttributes.props;
         this.app.mount(props);
       }
     }
@@ -78,18 +74,12 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
     value: function getAttributes() {
       var props = {};
       var attrs = {};
-      var hooks = {};
       var _iterator = _createForOfIteratorHelper(this.attributes),
         _step;
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var attr = _step.value;
-          if (attr.name === 'mount') {
-            continue;
-          }
-          console.log(attr.name);
-          if (attr.name.match(/on[A-Z][a-z]/)) {
-            hooks[attr.name] = attr.value;
+          if (attr.name === 'auto-mount') {
             continue;
           }
           if (_attributeList["default"].includes(attr.name)) {
@@ -98,19 +88,18 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
           }
           props[attr.name] = attr.value;
         }
-
-        // for (const prop of Object.keys(props)) {
-        //     this.removeAttribute(prop);
-        // }
       } catch (err) {
         _iterator.e(err);
       } finally {
         _iterator.f();
       }
+      for (var _i = 0, _Object$keys = Object.keys(props); _i < _Object$keys.length; _i++) {
+        var prop = _Object$keys[_i];
+        this.removeAttribute(prop);
+      }
       return {
         props: props,
-        attrs: attrs,
-        hooks: hooks
+        attrs: attrs
       };
     }
 
@@ -122,7 +111,7 @@ var AppComponentElement = /*#__PURE__*/function (_HTMLElement) {
   }, {
     key: "isAutoMount",
     get: function get() {
-      return this.hasAttribute('mount');
+      return this.hasAttribute('auto-mount');
     }
 
     /**
