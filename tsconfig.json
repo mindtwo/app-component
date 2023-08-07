@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "outDir": "./built",
+        "allowJs": true,
+        "target": "ES6",
+        "strict": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "moduleResolution": "Node",
+        "lib": ["es2016", "dom", "dom.iterable"]
+    },
+    "include": ["./src/**/*"]
+}

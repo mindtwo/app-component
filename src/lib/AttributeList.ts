@@ -1,4 +1,4 @@
-export default [
+const NAMES: string[] = [
     'accept',
     'accept-charset',
     'accesskey',
@@ -106,3 +106,5 @@ export default [
     'width',
     'wrap',
 ];
+
+export default NAMES;

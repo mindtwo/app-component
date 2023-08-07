@@ -1,15 +1,22 @@
-import AttributeList from './lib/attribute-list';
-import { EventDispatcher } from './lib/events';
-import { AppComponent } from './app-component';
+import AttributeList from './lib/AttributeList';
+import { EventDispatcher } from './lib/Events';
+import { AppComponent } from './AppComponent';
+import { Component } from 'vue';
 
 export class AppComponentElement extends HTMLElement {
-    constructor(name, component) {
+
+    name: string;
+    component: Component;
+
+    private _app: AppComponent;
+
+    constructor(name: string, component: Component) {
         super();
 
         this.name = name;
         this.component = component;
 
-        this.app = AppComponent.make(this.name, this.component);
+        this._app = AppComponent.make(this.name, this.component);
     }
 
     /**
@@ -40,8 +47,8 @@ export class AppComponentElement extends HTMLElement {
      * @returns {Object}
      */
     getAttributes() {
-        const props = {};
-        const attrs = {};
+        const props: { [key: string]: any } = {};
+        const attrs: { [key: string]: any } = {};
 
         for (const attr of this.attributes) {
             if (attr.name === 'auto-mount') {
@@ -64,6 +71,10 @@ export class AppComponentElement extends HTMLElement {
             props,
             attrs,
         };
+    }
+
+    get app(): AppComponent {
+        return this._app;
     }
 
     /**
