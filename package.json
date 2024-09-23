@@ -1,6 +1,6 @@
 {
     "name": "@mindtwo/app-component",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Helper to mount vue components to the dom inside a vue app",
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
@@ -20,6 +20,8 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "hookable": "^5.5.3",
+        "just-kebab-case": "^4.2.0",
         "just-pascal-case": "^3.2.0",
         "vue": "^3.2.45"
     },
