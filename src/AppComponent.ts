@@ -1,16 +1,22 @@
 import pascalCase from 'just-pascal-case';
-import { EventDispatcher } from './lib/Events';
+import kebabCase from 'just-kebab-case';
 
 import { App, Component, Plugin, createApp } from 'vue';
+import { EventHelper, EventType } from './lib/Events';
 
 export class AppComponent {
 
     name: string;
     component: Component;
 
-    eventbus: any;
+    private events: EventHelper = new EventHelper();
 
-    private vueApp: App | undefined;
+    // TODO use hooks and events
+    // private hooks = createHooks();
+
+    vueApp: App | undefined;
+
+    private props: { [key: string]: any } = {};
 
     private components: Map<string, Component> = new Map();
     private provides: Map<string, any> = new Map();
@@ -25,19 +31,19 @@ export class AppComponent {
     constructor(name: string, component: Component) {
         this.name = name;
         this.component = component;
-
-        // app components eventBus
-        this.eventbus = null;
     }
 
     /**
      * Mount our Course Builder Vue App
-     *
-     * @param {Object} props
      */
-    mount(props = {}) {
-        EventDispatcher.dispatch('beforemount', this);
+    mount(props?: { [key: string]: any }) {
+        // check if wrapper exists
+        if (!this.wrapper) {
+            console.error('Wrapper not found', this.wrapperId);
+            return;
+        }
 
+        // init app
         this.vueApp = createApp(this.component, props);
 
         // register components
@@ -48,7 +54,7 @@ export class AppComponent {
         }
 
         // register plugins
-        if (this.plugins.length) {
+        if (this.plugins.length > 0) {
             for (const { plugin, options } of this.plugins) {
                 this.vueApp.use(plugin, options);
             }
@@ -61,20 +67,87 @@ export class AppComponent {
             }
         }
 
+        this.vueApp.provide('emitter', this.events);
+
+        // emit beforemount event
+        this.events.emit('beforemount', this);
+
+        // mount app
         this.vueApp.mount(this.wrapper);
 
-        EventDispatcher.dispatch('mounted', this);
+        // emit mounted event
+        this.events.emit('mounted', this);
     }
 
     /**
      * Unmount component by clearing its wrapper
      */
     unmount() {
-        if (!this.wrapper) {
-            return;
+        this.events.emit('unmounting', this);
+
+        if (this.wrapper) {
+            this.wrapper.innerHTML = '';
         }
 
-        this.wrapper.innerHTML = '';
+        this.events.emit('unmounted', this);
+        this.events.removeAllListeners();
+    }
+
+    /**
+     * Destroy component
+     */
+    destroy() {
+        const w = window as any;
+        if (w && w[this.componentName]) {
+            delete w[this.componentName];
+        }
+    }
+
+    /**
+     *
+     * @param name - name of component
+     * @param component - component
+     * @returns this
+     */
+    registerComponent(name: string, component: Component): this {
+        this.components.set(name, component);
+
+        return this;
+    }
+
+    /**
+     * Register global injection inside app
+     *
+     * @param {string} key
+     * @param {any} value
+     */
+    registerProvide(key: string, value: any): this {
+        this.provides.set(key, value);
+
+        return this;
+    }
+
+    provide(key: string, value: any): this {
+        return this.registerProvide(key, value);
+    }
+
+    plugin(plugin: Plugin, options: any[]): this {
+        return this.registerPlugin(plugin, options);
+    }
+
+    /**
+     * Register plugins, that are used by vue
+     *
+     * @param {Plugin} plugin
+     * @param {any} options
+     */
+    registerPlugin(plugin: Plugin, options: any[]): this {
+        this.plugins.push({
+            plugin,
+            options,
+        });
+
+        return this;
     }
 
     /**
@@ -105,60 +178,49 @@ export class AppComponent {
     }
 
     /**
-     *
-     * @param name - name of component
-     * @param component - component
-     * @returns this
+     * Register event listener
+     * @param {EventType} event
+     * @param {Function} callback
+     * @returns {this}
      */
-    registerComponent(name: string, component: Component): this {
-        this.components.set(name, component);
+    addEventListener(event: EventType, callback: Function) {
+        this.events.on(event, callback);
 
         return this;
     }
 
     /**
-     * Register global injection inside app
+     * Alias for addEventListener
      *
-     * @param {string} key
-     * @param {any} value
+     * @param {EventType} event
+     * @param {Function} callback
+     * @returns {this}
      */
-    registerProvide(key: string, value: any): this {
-        this.provides.set(key, value);
-
-        return this;
+    on(event: EventType, callback: Function) {
+        return this.addEventListener(event, callback);
     }
 
-    /**
-     * Register plugins, that are used by vue
-     *
-     * @param {Plugin} plugin
-     * @param {any} options
-     */
-    registerPlugin(plugin: Plugin, options: any[]): this {
-        this.plugins.push({
-            plugin,
-            options,
-        });
-
-        return this;
+    isMounted(): boolean {
+        return !!this.vueApp?._instance;
     }
 
-    /**
-     * Register EventBus
-     *
-     * @param {Object} eventbus
-     */
-    registerEventbus(eventbus: any): this {
-        this.eventbus = eventbus;
+    isCreated(): boolean {
+        return !!this.vueApp;
+    }
 
-        return this;
+    get componentName() {
+        return pascalCase(this.name) as string;
+    }
+
+    get elementName() {
+        return kebabCase(this.name);
     }
 
     /**
      * @returns {string}
      */
     get wrapperId() {
-        return `${this.name}-app`;
+        return `${this.elementName}-app`;
     }
 
     /**
@@ -170,13 +232,11 @@ export class AppComponent {
         return document.querySelector<HTMLElement>(`#${this.wrapperId}`);
     }
 
-    /**
-     *
-     * @param {string} name
-     * @param {*} component
-     * @returns {this}
-     */
-    static make(name: string, component: Component) {
+    setProps(props: { [key: string]: any }) {
+        this.props = props;
+    }
+
+    static create(name: string, component: Component): AppComponent {
         const pascalName = pascalCase(name) as string;
 
         const appComponent = new this(name, component);

@@ -1,89 +1,51 @@
-import { AppComponent } from "../AppComponent";
+export type EventType = 'beforemount' | 'initialized' | 'init' | 'mounted' | 'navigate' | 'unmounting' | 'unmounted';
 
-type EventType = 'beforemount' | 'initialized' | 'init' | 'mounted';
+export class EventHelper {
+    private listeners: Map<EventType, Function[]> = new Map();
 
-class BaseComponentEvent extends Event {
-    componentName: string;
-
-    constructor(eventName: string, componentName: string) {
-        super(eventName);
-
-        this.componentName = componentName;
-    }
-};
-
-class AppComponentBeforemount extends BaseComponentEvent {
-    constructor(componentName: string) {
-        super('app-component-beforemount', componentName);
-    }
-}
-class AppComponentInitialized extends BaseComponentEvent {
-    constructor(componentName: string) {
-        super('app-component-initialized', componentName);
-    }
-}
-class AppComponentInit extends BaseComponentEvent {
-    constructor(componentName: string) {
-        super('app-component-init', componentName);
-    }
-}
-class AppComponentMounted extends BaseComponentEvent {
-    constructor(componentName: string) {
-        super('app-component-mounted', componentName);
-    }
-}
-
-export class EventDispatcher {
-    static _instance: EventDispatcher;
-
-    constructor() {
-        // required when used in nuxt context
-        if (!window) {
-            return {
-                _dispatch: () => {},
-            };
+    on(event: EventType, callback: Function, keep: boolean = false) {
+        if (!this.listeners.has(event)) {
+            this.listeners.set(event, []);
         }
 
-        if (EventDispatcher._instance) {
-            return EventDispatcher._instance;
-        }
+        if (keep) {
+            (window as any).addEventListener(event, (e: CustomEvent) => {
+                callback(...e.detail);
+            });
 
-        EventDispatcher._instance = this;
-    }
-
-    static dispatch(eventType: EventType, component: AppComponent) {
-        const instance = new EventDispatcher();
-
-        instance._dispatch(eventType, component.name, component.eventbus);
-    }
-
-    _dispatch(eventType: EventType, componentName: string, eventbus) {
-        let event: BaseComponentEvent | undefined = undefined;
-        if (eventType === 'beforemount') {
-            event = new AppComponentBeforemount(componentName);
-        }
-
-        if (eventType === 'initialized') {
-            event = new AppComponentInitialized(componentName);
-        }
-
-        if (eventType === 'init') {
-            event = new AppComponentInit(componentName);
-        }
-
-        if (eventType === 'mounted') {
-            event = new AppComponentMounted(componentName);
-        }
-
-        if (!event) {
             return;
         }
 
-        if (eventbus && eventbus.trigger) {
-            eventbus.trigger(eventType, event);
+        this.listeners.get(event)?.push(callback);
+    }
+
+    emit(event: EventType, ...args: any[]) {
+        if (!this.listeners.has(event)) {
             return;
         }
 
-        window.dispatchEvent(event);
+        if (window) {
+            window.dispatchEvent(new CustomEvent(event, { detail: args }));
+        }
+
+        this.listeners.get(event)?.forEach((callback) => {
+            callback(...args);
+        });
+    }
+
+    off(event: EventType, callback: Function) {
+        if (!this.listeners.has(event)) {
+            return;
+        }
+
+        const index = this.listeners.get(event)?.indexOf(callback);
+
+        if (index !== -1 && index !== undefined) {
+            this.listeners.get(event)?.splice(index, 1);
+        }
+    }
+
+    removeAllListeners() {
+        this.listeners.clear();
     }
 }

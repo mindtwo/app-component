@@ -1,17 +1,22 @@
 {
     "name": "@mindtwo/app-component",
-    "version": "0.2.0",
+    "version": "0.3.1",
     "description": "Helper to mount vue components to the dom inside a vue app",
+    "files": [
+        "dist"
+    ],
+    "repository": {
+        "url": "git://github.com/mindtwo/app-component.git."
+    },
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
             "import": "./dist/index.mjs",
-            "require": "./dist/index.cjs"
+            "require": "./dist/index.cjs",
+            "types": "./dist/index.d.ts"
         }
     },
-    "types": "./dist/index.d.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "unbuild",
@@ -20,6 +25,8 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "hookable": "^5.5.3",
+        "just-kebab-case": "^4.2.0",
         "just-pascal-case": "^3.2.0",
         "vue": "^3.2.45"
     },

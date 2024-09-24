@@ -1,12 +1,13 @@
-import AttributeList from './lib/AttributeList';
-import { EventDispatcher } from './lib/Events';
-import { AppComponent } from './AppComponent';
 import { Component } from 'vue';
+
+import AttributeList from './lib/AttributeList';
+import pascalCase from 'just-pascal-case';
+import kebabCase from 'just-kebab-case';
+import { AppComponent } from './AppComponent';
 
 export class AppComponentElement extends HTMLElement {
 
-    name: string;
-    component: Component;
+    private name: string;
 
     private _app: AppComponent;
 
@@ -14,31 +15,37 @@ export class AppComponentElement extends HTMLElement {
         super();
 
         this.name = name;
-        this.component = component;
 
-        this._app = AppComponent.make(this.name, this.component);
+        this._app = AppComponent.create(name, component);
     }
 
     /**
      * Init our app view, equal to mount
      */
     connectedCallback() {
+
         // disable init start
-        // EventDispatcher.dispatch('init', this.name);
-
-        // create wrapper div
         const wrapper = document.createElement('div');
-        wrapper.id = this.wrapperId;
+        wrapper.setAttribute('id', this.app.wrapperId);
 
-        // add to element DOM
         this.appendChild(wrapper);
 
-        EventDispatcher.dispatch('initialized', this.app);
+        // create wrapper div
+        const { props } = this.getAttributes();
+
+        // add props to app
+        this.app.setProps(props);
 
         if (this.isAutoMount) {
-            const { props } = this.getAttributes();
+            // TODO maybe if app component is added to window object we can auto mount
             this.app.mount(props);
         }
+    }
+
+    disconnectedCallback() {
+        this.app.unmount();
+
+        this.app.destroy();
     }
 
     /**
@@ -50,7 +57,7 @@ export class AppComponentElement extends HTMLElement {
         const props: { [key: string]: any } = {};
         const attrs: { [key: string]: any } = {};
 
-        for (const attr of this.attributes) {
+        for (const attr of Array.from(this.attributes)) {
             if (attr.name === 'auto-mount') {
                 continue;
             }
@@ -86,10 +93,11 @@ export class AppComponentElement extends HTMLElement {
         return this.hasAttribute('auto-mount');
     }
 
-    /**
-     * @returns {string}
-     */
-    get wrapperId() {
-        return `${this.name}-app`;
+    get componentName() {
+        return pascalCase(this.name) as string;
+    }
+
+    get elementName() {
+        return kebabCase(this.name);
     }
 }

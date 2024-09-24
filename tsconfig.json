@@ -1,14 +1,15 @@
 {
     "compilerOptions": {
         "outDir": "./built",
-        "allowJs": true,
-        "target": "ES6",
+        "target": "es2016",
+        "lib": ["es2016", "dom", "esnext"],
         "strict": true,
         "noImplicitAny": true,
         "noImplicitThis": true,
         "noImplicitReturns": true,
         "moduleResolution": "Node",
-        "lib": ["es2016", "dom", "dom.iterable"]
+        "module": "esnext",
+        // "lib": ["es2016", "dom"]
     },
     "include": ["./src/**/*"]
 }
