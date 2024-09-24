@@ -20,17 +20,16 @@ export class EventHelper {
     }
 
     emit(event: EventType, ...args: any[]) {
-        if (!this.listeners.has(event)) {
-            return;
+        // check if event is available
+        if (this.listeners.has(event)) {
+            this.listeners.get(event)?.forEach((callback) => {
+                callback(...args);
+            });
         }
 
         if (window) {
             window.dispatchEvent(new CustomEvent(`app-component-${event}`, { detail: args }));
         }
-
-        this.listeners.get(event)?.forEach((callback) => {
-            callback(...args);
-        });
     }
 
     off(event: EventType, callback: Function) {
