@@ -1,6 +1,6 @@
 {
     "name": "@mindtwo/app-component",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "description": "Helper to mount vue components to the dom inside a vue app",
     "files": [
         "dist"
@@ -22,7 +22,7 @@
         "build": "unbuild",
         "babel": "babel src -d dist"
     },
-    "author": "",
+    "author": "mindtwo",
     "license": "ISC",
     "dependencies": {
         "hookable": "^5.5.3",
