@@ -23,6 +23,8 @@ export class AppComponentElement extends HTMLElement {
      * Init our app view, equal to mount
      */
     connectedCallback() {
+        // emit init event
+        this._app.emit('init', this._app);
 
         // disable init start
         const wrapper = document.createElement('div');
@@ -36,10 +38,15 @@ export class AppComponentElement extends HTMLElement {
         // add props to app
         this.app.setProps(props);
 
+        // emit loaded event
+        this._app.emit('loaded', this._app);
+
         if (this.isAutoMount) {
             // TODO maybe if app component is added to window object we can auto mount
             this.app.mount(props);
         }
+
+        this._app.emit('initialized', this._app);
     }
 
     disconnectedCallback() {

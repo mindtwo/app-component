@@ -200,6 +200,18 @@ export class AppComponent {
         return this.addEventListener(event, callback);
     }
 
+    /**
+     * Emit event
+     * @param {EventType} event
+     * @param args
+     * @returns {this}
+     */
+    emit(event: EventType, ...args: any[]) {
+        this.events.emit(event, ...args);
+
+        return this;
+    }
+
     isMounted(): boolean {
         return !!this.vueApp?._instance;
     }

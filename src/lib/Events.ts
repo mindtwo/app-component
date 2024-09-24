@@ -1,4 +1,4 @@
-export type EventType = 'beforemount' | 'initialized' | 'init' | 'mounted' | 'navigate' | 'unmounting' | 'unmounted';
+export type EventType = 'beforemount' | 'initialized' | 'init' | 'mounted' | 'navigate' | 'unmounting' | 'unmounted' | 'loaded';
 
 export class EventHelper {
     private listeners: Map<EventType, Function[]> = new Map();
@@ -9,7 +9,7 @@ export class EventHelper {
         }
 
         if (keep) {
-            (window as any).addEventListener(event, (e: CustomEvent) => {
+            (window as any).addEventListener(`app-component-${event}`, (e: CustomEvent) => {
                 callback(...e.detail);
             });
 
@@ -25,7 +25,7 @@ export class EventHelper {
         }
 
         if (window) {
-            window.dispatchEvent(new CustomEvent(event, { detail: args }));
+            window.dispatchEvent(new CustomEvent(`app-component-${event}`, { detail: args }));
         }
 
         this.listeners.get(event)?.forEach((callback) => {
