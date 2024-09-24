@@ -1,4 +1,18 @@
+import { AppComponent } from "../AppComponent";
+
 export type EventType = 'beforemount' | 'initialized' | 'init' | 'mounted' | 'navigate' | 'unmounting' | 'unmounted' | 'loaded';
+
+class ComponentEvent extends CustomEvent<AppComponent|undefined> {
+    componentName?: string;
+
+    constructor(type: EventType, app?: AppComponent) {
+        super(`app-component-${type}`, {
+            detail: app
+        });
+
+        this.componentName = app?.elementName;
+    }
+}
 
 export class EventHelper {
     private listeners: Map<EventType, Function[]> = new Map();
@@ -28,7 +42,15 @@ export class EventHelper {
         }
 
         if (window) {
-            window.dispatchEvent(new CustomEvent(`app-component-${event}`, { detail: args }));
+            const detail = args.length === 1 ? args[0] : args;
+
+            if (detail instanceof AppComponent) {
+                window.dispatchEvent(new ComponentEvent(event, detail));
+
+                return;
+            }
+
+            window.dispatchEvent(new CustomEvent(`app-component-${event}`, { detail }));
         }
     }
 
