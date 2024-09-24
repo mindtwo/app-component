@@ -43,6 +43,9 @@ export class AppComponent {
             return;
         }
 
+        // emit beforemount event
+        this.events.emit('beforemount', this, props);
+
         // init app
         this.vueApp = createApp(this.component, props);
 
@@ -68,9 +71,6 @@ export class AppComponent {
         }
 
         this.vueApp.provide('emitter', this.events);
-
-        // emit beforemount event
-        this.events.emit('beforemount', this);
 
         // mount app
         this.vueApp.mount(this.wrapper);

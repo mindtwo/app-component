@@ -11,6 +11,8 @@ export class AppComponentElement extends HTMLElement {
 
     private _app: AppComponent;
 
+    protected attrsProps: { attrs: { [key: string]: any }, props: { [key: string]: any } } = { attrs: {}, props: {} };
+
     constructor(name: string, component: Component) {
         super();
 
@@ -32,18 +34,15 @@ export class AppComponentElement extends HTMLElement {
 
         this.appendChild(wrapper);
 
-        // create wrapper div
-        const { props } = this.getAttributes();
-
-        // add props to app
-        this.app.setProps(props);
+        // get props and attributes
+        this.attrsProps = this.getAttributes();
 
         // emit loaded event
         this._app.emit('loaded', this._app);
 
         if (this.isAutoMount) {
             // TODO maybe if app component is added to window object we can auto mount
-            this.app.mount(props);
+            this.app.mount(this.attrsProps.props);
         }
 
         this._app.emit('initialized', this._app);
