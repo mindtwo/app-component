@@ -1,296 +1,97 @@
 # @mindtwo/app-component
-
-`@mindtwo/app-component` is an NPM package that allows you to wrap Vue applications into custom web components. This makes it easy to integrate Vue-based apps as standalone, reusable components in any web project.
-
+Helper for mounting Vue components into the DOM within a Vue app. This utility simplifies mounting Vue components dynamically onto specific DOM elements and facilitates the seamless integration of Vue components into non-SPA (Single Page Application) environments.
+## Table of Contents
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Examples](#examples)
+- [API](#api)
+- [Attributes](#attributes)
+- [License](#license)
+## Introduction
+The `@mindtwo/app-component` package is a utility that allows you to easily mount Vue components onto specific HTML elements dynamically. This is particularly useful when integrating Vue into existing applications where Vue isn't controlling the entire page. The package handles the lifecycle of Vue components, including mounting, unmounting, and managing their state.
+### Problems Solved:
+- Simplifies the process of embedding Vue components into non-SPA applications.
+- Allows dynamic mounting and unmounting of Vue components on demand.
+- Manages Vue component state and event handling across different parts of an application.
 ## Installation
-
-To install the package, you can use npm or yarn:
-
+To install the package from the GitHub npm registry, you can use the following command:
 ```bash
-npm install @mindtwo/app-component
+npm install @mindtwo/app-component --registry=https://npm.pkg.github.com/mindtwo
 ```
-
-or
-
+Make sure you have configured your `.npmrc` to use the GitHub npm registry:
 ```bash
-yarn add @mindtwo/app-component
+# .npmrc
+@mindtwo:registry=https://npm.pkg.github.com/
 ```
-
 ## Usage
-
-This package provides two main exports: `AppComponent` and `AppComponentElement`. You can use these to create web components that encapsulate Vue apps.
-
-### Example
-
-Here's an example of how to create a custom web component using the `AppComponentElement` from the package.
-
-```js
-import MyRootComponent from './MyRootComponent.vue';
-import { AppComponentElement } from '@mindtwo/app-component';
-
-class MyAppElement extends AppComponentElement {
-    constructor() {
-        super('my-app', MyRootComponent);
-
-        // register vue plugins and provides by using
-    }
-}
-
-if (!customElements.get('my-app-element')) {
-    customElements.define(
-        'my-app-element',
-        MyAppElement
-    );
-}
+First, ensure you import the necessary functions and classes from the `@mindtwo/app-component` package in your JavaScript or TypeScript files.
+```ts
+import { AppComponentElement, AppComponent } from '@mindtwo/app-component';
+import MyComponent from './components/MyComponent.vue';
+// Create a new custom element and mount it to the DOM
+customElements.define('my-app-component', new AppComponentElement('my-app-component', MyComponent));
 ```
-
-### Explanation:
-
-- **`AppComponentElement`**: Extends the web component class with Vue App using `MyRootComponent` as root.
-- **Custom Element Definition**: The `MyAppElement` web component is defined if it has not already been registered with the `customElements` API.
-
-This approach encapsulates the Vue application and plugins inside a custom HTML element that can be used like any other native web component.
-
+In your HTML file, you can then use the custom element as follows:
+```html
+<my-app-component auto-mount></my-app-component>
+```
+This will automatically mount the `MyComponent` Vue component into the DOM.
+### Dynamic Mounting Example
+You can programmatically control when components are mounted and unmounted:
+```ts
+const appComponent = AppComponent.create('my-app-component', MyComponent);
+// Pass props dynamically and mount the component
+appComponent.setProps({ someProp: 'value' });
+appComponent.mount();
+// Later, you can unmount the component
+appComponent.unmount();
+```
+## Examples
+### Basic Example
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue App Component Example</title>
+  </head>
+  <body>
+    <my-app-component></my-app-component>
+    <script type="module">
+      import { AppComponentElement } from '@mindtwo/app-component';
+      import MyComponent from './MyComponent.vue';
+      customElements.define('my-app-component', new AppComponentElement('my-app-component', MyComponent));
+    </script>
+  </body>
+</html>
+```
+### Component with Props
+```html
+<my-app-component some-prop="Hello, World!"></my-app-component>
+```
+Here, `some-prop` will be passed as a prop to the `MyComponent` Vue component.
 ## API
-
-### `AppComponentElement`
-This class extends `AppComponent` and is used to define a custom element that wraps a Vue app. Via the linked `AppComponent` instance you can control the App.
-
-On the custom element we can define attributes and properties. They are accessible inside the instance. `AppComponentElement` is the class you want to extend and register on the DOM.
-
 ### `AppComponent`
-This is the base class used to control our Vue.js Apps via a global Browser instance.
-
-### `mount(props?: { [key: string]: any })`
-
-The `mount` method is responsible for manually mounting the Vue app wrapped by the `AppComponent`. It initializes the app, registers any plugins and components, and mounts the app to the specified DOM element, referred to as the "wrapper."
-
-#### Parameters:
-
-- **`props`** (optional): An object containing the initial properties (`props`) to pass to the root Vue component during the mount process. These `props` can be used to customize the behavior of the component when it's being rendered.
-
-#### Usage Example:
-
-```js
-const appComponent = new AppComponent('my-component', MyVueComponent);
-
-// Manually mount the app with some initial props
-appComponent.mount({
-    title: 'Welcome to My Vue App',
-    isVisible: true,
-});
-```
-
-In this example, the Vue component `MyVueComponent` is manually mounted to the DOM, passing in the initial props (`title` and `isVisible`). If a wrapper element with the correct `wrapperId` is found, the component will be rendered into that element, and any components, plugins, or provides registered with the `AppComponent` will be applied.
-
-### `AppComponent` Static Methods
-
-The `AppComponent` class provides static methods to help create and manage Vue-based web components. Below are the static methods available in `AppComponent`.
-
-#### `AppComponent.create(name: string, component: Component): AppComponent`
-
-This static method creates a new instance of `AppComponent` and registers it globally under the `window` object.
-
-**Parameters:**
-
-- `name` (string): The name of the web component you want to create. This name will be converted into `PascalCase` and used as the key under the `window` object.
-- `component` (Component): The Vue component that you want to wrap inside the `AppComponent`.
-
-**Returns:**
-
-- An instance of `AppComponent`.
-
-**Usage Example:**
-
-```js
-import MyRootComponent from './MyRootComponent.vue';
-import { AppComponent } from '@mindtwo/app-component';
-
-// Create a new AppComponent and register it globally
-const appComponent = AppComponent.create('my-app-element', MyRootComponent);
-```
-
-**Details:**
-- This method creates a new `AppComponent` instance with the provided `name` and `component`.
-- It also registers the instance globally in the `window` object, making it accessible throughout the application using the `PascalCase` version of the `name`.
-
-For example, if the `name` is `'my-app-element'`, the component can be accessed globally as `window.MyAppElement`.
-
-Here’s a detailed explanation of the methods in `AppComponent` that register events, plugins, provides, and components, as well as how they interact with Vue.
-
----
-
-### Event Registration
-
-The `AppComponent` class allows for the registration of event listeners for specific lifecycle events and custom events.
-
-#### `addEventListener(event: EventType, callback: Function): this`
-
-This method registers an event listener for a specific event type. It uses an internal `EventHelper` to manage the event listeners.
-
-**Parameters:**
-
-- `event` (EventType): The type of event to listen for. The available event types are:
-  - `'beforemount'`: Triggered before the Vue component is mounted.
-  - `'initialized'`: Triggered when the component is initialized.
-  - `'init'`: Alias for `initialized`.
-  - `'mounted'`: Triggered when the component is mounted to the DOM.
-  - `'navigate'`: Can be used to capture navigation-related events.
-  - `'unmounting'`: Triggered before the component is unmounted.
-  - `'unmounted'`: Triggered after the component has been unmounted.
-
-- `callback` (Function): The function to execute when the event is triggered.
-
-**Returns:**
-
-- The `AppComponent` instance for chaining.
-
-**Usage Example:**
-
-```js
-appComponent.addEventListener('mounted', () => {
-    console.log('Component has been mounted!');
-});
-```
-
-#### `on(event: EventType, callback: Function): this`
-
-This is an alias for `addEventListener` and behaves in the same way.
-
-```js
-appComponent.on('unmounted', () => {
-    console.log('Component has been unmounted!');
-});
-```
-
----
-
-### Plugin Registration
-
-The `AppComponent` allows you to register Vue plugins, enabling you to extend the functionality of the Vue app with external plugins.
-
-#### `registerPlugin(plugin: Plugin, options: any[]): this`
-
-This method registers a Vue plugin within the `AppComponent` instance.
-
-**Parameters:**
-
-- `plugin` (Plugin): The Vue plugin to register.
-- `options` (any[]): An array of options to pass to the plugin during registration.
-
-**Returns:**
-
-- The `AppComponent` instance for chaining.
-
-**Usage Example:**
-
-```js
-import { createPinia } from 'pinia';
-
-appComponent.registerPlugin(createPinia(), []);
-```
-
-#### `plugin(plugin: Plugin, options: any[]): this`
-
-This method is an alias for `registerPlugin`, making it easier to chain plugin registrations.
-
-```js
-import { i18n } from './i18n';
-
-appComponent.plugin(i18n, []);
-```
-
-#### `registerPlugins(plugins: { plugin: Plugin, options: any[] }[]): this`
-
-This method registers multiple Vue plugins at once.
-
-**Parameters:**
-
-- `plugins` (Array): An array of objects, each containing a `plugin` and associated `options`.
-
-**Usage Example:**
-
-```js
-appComponent.registerPlugins([
-    { plugin: createPinia(), options: [] },
-    { plugin: i18n, options: [] }
-]);
-```
-
----
-
-### Provide Registration
-
-Vue's `provide/inject` feature allows you to pass data down through the component tree without explicitly passing props. `AppComponent` supports this pattern by allowing you to register global provides.
-
-#### `registerProvide(key: string, value: any): this`
-
-This method registers a global value that can be injected into child components.
-
-**Parameters:**
-
-- `key` (string): The key that identifies the provided value.
-- `value` (any): The value to provide.
-
-**Returns:**
-
-- The `AppComponent` instance for chaining.
-
-**Usage Example:**
-
-```js
-appComponent.registerProvide('myGlobalKey', myGlobalValue);
-```
-
-#### `provide(key: string, value: any): this`
-
-This is an alias for `registerProvide`.
-
-```js
-appComponent.provide('myGlobalKey', myGlobalValue);
-```
-
----
-
-### Component Registration
-
-`AppComponent` allows you to register additional Vue components globally within the app.
-
-#### `registerComponent(name: string, component: Component): this`
-
-This method registers a single Vue component globally.
-
-**Parameters:**
-
-- `name` (string): The name of the component.
-- `component` (Component): The Vue component to register.
-
-**Returns:**
-
-- The `AppComponent` instance for chaining.
-
-**Usage Example:**
-
-```js
-import MyCustomComponent from './MyCustomComponent.vue';
-
-appComponent.registerComponent('MyCustomComponent', MyCustomComponent);
-```
-
-#### `registerComponents(components: Map<string, Component>): this`
-
-This method registers multiple Vue components at once using a map where the keys are the component names and the values are the component definitions.
-
-**Parameters:**
-
-- `components` (Map): A `Map` of component names and component instances.
-
-**Usage Example:**
-
-```js
-const components = new Map();
-components.set('MyCustomComponent', MyCustomComponent);
-components.set('AnotherComponent', AnotherComponent);
-
-appComponent.registerComponents(components);
-```
+The `AppComponent` class is responsible for managing the Vue application instance.
+- `AppComponent.create(name: string, component: Component): AppComponent`: Creates a new `AppComponent` instance and registers it on the global `window` object.
+- `mount(props: { [key: string]: any }): void`: Mounts the Vue component to the DOM with optional props.
+- `unmount(): void`: Unmounts the Vue component and clears the DOM wrapper.
+- `registerComponent(name: string, component: Component): this`: Registers additional components to the app.
+- `registerPlugin(plugin: Plugin, options: any[]): this`: Registers Vue plugins with options.
+- `setProps(props: { [key: string]: any }): void`: Sets the props for the component before mounting.
+- `addEventListener(event: EventType, callback: Function): this`: Adds an event listener for component lifecycle events.
+### `AppComponentElement`
+The `AppComponentElement` class is a custom element that extends `HTMLElement`. It wraps the Vue component's mounting and unmounting logic and is automatically mounted when added to the DOM.
+- `constructor(name: string, component: Component)`: Initializes the custom element with the given Vue component.
+- `connectedCallback()`: Lifecycle method, called when the element is added to the DOM.
+- `disconnectedCallback()`: Lifecycle method, called when the element is removed from the DOM.
+- `getAttributes()`: Returns the props and attributes for the Vue component.
+- `isAutoMount`: Checks whether the component should automatically mount upon connection.
+## Attributes
+The custom element supports passing attributes as props to the Vue component. Here's a list of supported attributes:
+- `auto-mount`: Automatically mounts the component when added to the DOM.
+- All standard HTML attributes (like `id`, `class`, etc.) are passed as props to the Vue component.
+## License
+This project is licensed under the MIT License.
