@@ -15,9 +15,9 @@ class ComponentEvent extends CustomEvent<AppComponent|undefined> {
 }
 
 export class EventHelper {
-    private listeners: Map<EventType, Function[]> = new Map();
+    private listeners: Map<EventType|string, Function[]> = new Map();
 
-    on(event: EventType, callback: Function, keep: boolean = false) {
+    on(event: EventType|string, callback: Function, keep: boolean = false) {
         if (!this.listeners.has(event)) {
             this.listeners.set(event, []);
         }
@@ -33,7 +33,7 @@ export class EventHelper {
         this.listeners.get(event)?.push(callback);
     }
 
-    emit(event: EventType, ...args: any[]) {
+    emit(event: EventType|string, ...args: any[]) {
         // check if event is available
         if (this.listeners.has(event)) {
             this.listeners.get(event)?.forEach((callback) => {
@@ -44,7 +44,7 @@ export class EventHelper {
         if (window) {
             const detail = args.length === 1 ? args[0] : args;
 
-            if (detail instanceof AppComponent) {
+            if (detail instanceof AppComponent && typeof event !== 'string') {
                 window.dispatchEvent(new ComponentEvent(event, detail));
 
                 return;
@@ -54,7 +54,7 @@ export class EventHelper {
         }
     }
 
-    off(event: EventType, callback: Function) {
+    off(event: EventType|string, callback: Function) {
         if (!this.listeners.has(event)) {
             return;
         }

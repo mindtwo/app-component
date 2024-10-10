@@ -1,6 +1,6 @@
 {
     "name": "@mindtwo/app-component",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "description": "Helper to mount vue components to the dom inside a vue app",
     "files": [
         "dist"
