@@ -2,6 +2,10 @@ import { AppComponent } from "../AppComponent";
 
 export type EventType = 'beforemount' | 'initialized' | 'init' | 'mounted' | 'navigate' | 'unmounting' | 'unmounted' | 'loaded';
 
+function isEventType(event: string): event is EventType {
+    return ['beforemount', 'initialized', 'init', 'mounted', 'navigate', 'unmounting', 'unmounted', 'loaded'].includes(event);
+}
+
 class ComponentEvent extends CustomEvent<AppComponent|undefined> {
     componentName?: string;
 
@@ -44,7 +48,7 @@ export class EventHelper {
         if (window) {
             const detail = args.length === 1 ? args[0] : args;
 
-            if (detail instanceof AppComponent && typeof event !== 'string') {
+            if (detail instanceof AppComponent && isEventType(event)) {
                 window.dispatchEvent(new ComponentEvent(event, detail));
 
                 return;
