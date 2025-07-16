@@ -1,15 +1,18 @@
 {
     "compilerOptions": {
         "outDir": "./built",
-        "target": "es2016",
-        "lib": ["es2016", "dom", "esnext"],
+        "target": "es2022",
+        "lib": ["es2022", "dom"],
         "strict": true,
         "noImplicitAny": true,
         "noImplicitThis": true,
         "noImplicitReturns": true,
         "moduleResolution": "Node",
         "module": "esnext",
-        // "lib": ["es2016", "dom"]
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
     },
     "include": ["./src/**/*"]
 }
