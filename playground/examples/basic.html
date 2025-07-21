@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic App Component Example</title>
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <script type="module" src="../js/basic/greeting-component.js"></script>
+    <script type="module" src="../js/basic/shadow-root-component.js"></script>
+    <script type="module" src="../js/basic/counter-component.js"></script>
+    <script type="module" src="../js/basic/manual-component.js"></script>
+
+    <style>
+        /* Define primary color var */
+        :root {
+            --primary-color: #4a90e2;
+        }
+
+        .primary {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>App Component Playground - Basic Example</h1>
+
+    <div class="example-section">
+        <h2>Simple Counter Component</h2>
+        <p>This example shows a basic counter component with auto-mount enabled.</p>
+        <div class="component-container">
+            <counter-component auto-mount></counter-component>
+        </div>
+    </div>
+
+    <div class="example-section">
+        <h2>Greeting Component with Props</h2>
+        <p>This example shows a component that accepts props from HTML attributes.</p>
+        <div class="component-container">
+            <greeting-component auto-mount greeted="World" title="Hello" color="blue">
+            </greeting-component>
+        </div>
+    </div>
+
+    <div class="example-section">
+        <h2>Shadow Root Component</h2>
+        <p>This example shows a component that uses shadow root.</p>
+
+        <div>
+            <p>CSS Variables outside Shadow Root:</p>
+            <ul>
+                <li>Primary Color: <span class="primary">#4a90e2</span></li>
+            </ul>
+        </div>
+
+        <div class="component-container">
+            <shadow-root-component auto-mount></shadow-root-component>
+        </div>
+    </div>
+
+    <div class="example-section">
+        <script>
+            // Function to mount the manual component
+            async function mountManualComponent() {
+                if (window.ManualComponent) {
+                    if (!window.ManualComponent.created()) {
+                        // Create the component if it hasn't been created yet
+                        await window.ManualComponent.create();
+                    }
+
+                    window.ManualComponent.mount();
+                }
+            }
+
+            // Function to unmount the manual component
+            function unmountManualComponent() {
+                if (window.ManualComponent) {
+                    window.ManualComponent.unmount();
+                }
+            }
+        </script>
+
+        <h2>Manual Mount/Unmount</h2>
+        <p>This example shows how to manually control component mounting.</p>
+        <div class="component-container">
+            <manual-component id="manual-demo"></manual-component>
+        </div>
+        <button onclick="mountManualComponent()">Mount Component</button>
+        <button onclick="unmountManualComponent()">Unmount Component</button>
+    </div>
+
+    <!--
+    <div class="example-section">
+        <h2>Dynamic Props</h2>
+        <p>This example shows how to update component props dynamically.</p>
+        <div class="component-container">
+            <dynamic-component auto-mount message="Initial message"></dynamic-component>
+        </div>
+        <input type="text" id="messageInput" placeholder="Enter new message">
+        <button onclick="updateMessage()">Update Message</button>
+    </div> -->
+</body>
+
+</html>

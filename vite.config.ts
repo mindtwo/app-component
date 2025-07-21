@@ -12,6 +12,7 @@ export default defineConfig({
             // the proper extensions will be added
             fileName: 'app-component',
         },
+        sourcemap: true,
         rollupOptions: {
             // make sure to externalize deps that shouldn't be bundled
             // into your library
@@ -23,6 +24,9 @@ export default defineConfig({
                     vue: 'Vue',
                 },
             },
+        },
+        watch: {
+            include: 'src/**',
         },
     },
 });

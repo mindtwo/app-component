@@ -1,0 +1,12 @@
+{
+    "private": true,
+    "name": "app-component-playground",
+    "type": "module",
+    "scripts": {
+        "start": "vite --port 3333"
+    },
+    "dependencies": {
+        "@vitejs/plugin-vue": "^6.0.0",
+        "vite": "^7.0.4"
+    }
+}
