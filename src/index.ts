@@ -153,6 +153,8 @@ class AppComponent {
             // Mount the Vue app
             await componentBridge.mount();
         }
+
+        // TODO: return something?
     }
 
     // TODO: maybe add global hooks via "channels" like "component:hookname"?

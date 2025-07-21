@@ -1,7 +1,7 @@
 import { AppComponent } from '../../../dist/app-component';
 import CssVarDisplay from './components/CssVarDisplay.vue';
 
-const shadowRoot = AppComponent.create({
+AppComponent.create({
     name: 'shadow-root-component',
     component: CssVarDisplay,
     shadowRoot: true,

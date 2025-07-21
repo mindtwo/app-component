@@ -152,7 +152,7 @@ export default class AppComponentBridge {
         await this.hooks.emit('unmounting', this);
         // Logic to destroy the app component
         this._logger.debug(`Destroying app component: ${this.name}`);
-        const w = window as WindowWithAppComponentBridge;
+        // const w = window as WindowWithAppComponentBridge;
 
         // remove the Vue app instance
         if (this.vueApp) {

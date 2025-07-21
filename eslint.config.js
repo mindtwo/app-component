@@ -5,7 +5,7 @@ import tsparser from '@typescript-eslint/parser';
 export default [
     js.configs.recommended,
     {
-        files: ['**/*.js'],
+        files: ['src/**/*.js'],
         languageOptions: {
             ecmaVersion: 2022,
             sourceType: 'module',
@@ -40,7 +40,7 @@ export default [
         },
     },
     {
-        files: ['**/*.ts'],
+        files: ['src/**/*.ts'],
         languageOptions: {
             parser: tsparser,
             parserOptions: {
