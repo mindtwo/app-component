@@ -1,4 +1,4 @@
-import { AppComponent } from '../../../dist/app-component';
+import { AppComponent } from '@mindtwo/app-component';
 import GlobalEventEmitterComponent from './components/GlobalEventEmitterComponent.vue';
 import GlobalEventReceiverComponent from './components/GlobalEventReceiverComponent.vue';
 

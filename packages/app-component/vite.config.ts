@@ -5,14 +5,29 @@ import { defineConfig } from 'vite';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+    resolve: {
+        preserveSymlinks: true,
+        dedupe: ['vue'],
+    },
+    server: {
+        fs: {
+            allow: ['..'],
+        },
+    },
     build: {
+        target: 'esnext',
+        outDir: 'dist',
+        emptyOutDir: true,
+        sourcemap: true,
         lib: {
             entry: resolve(__dirname, 'src/index.ts'),
             name: 'AppComponent',
             // the proper extensions will be added
             fileName: 'app-component',
         },
-        sourcemap: true,
+        commonjsOptions: {
+            include: [/node_modules/],
+        },
         rollupOptions: {
             // make sure to externalize deps that shouldn't be bundled
             // into your library
@@ -24,9 +39,6 @@ export default defineConfig({
                     vue: 'Vue',
                 },
             },
-        },
-        watch: {
-            include: 'src/**',
         },
     },
 });

@@ -1,45 +1,22 @@
 {
-    "name": "@mindtwo/app-component",
-    "version": "1.0.0",
+    "name": "@mindtwo/app-component-repo",
+    "private": true,
+    "version": "0.1.0",
     "type": "module",
-    "description": "Helper to mount vue components to the dom inside a vue app",
-    "files": [
-        "dist"
-    ],
-    "repository": {
-        "url": "git://github.com/mindtwo/app-component.git."
-    },
-    "main": "./dist/app-component.umd.js",
-    "module": "./dist/app-component.mjs",
-    "exports": {
-        ".": {
-            "import": "./dist/app-component.mjs",
-            "require": "./dist/app-component.umd.js"
-        }
-    },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "vite build",
-        "lint": "eslint src --ext .ts,.js,.vue",
-        "lint:fix": "eslint src --ext .ts,.js,.vue --fix",
-        "dev": "npm run playground",
-        "playground": "vite serve playground --port 3333"
-    },
-    "author": "mindtwo",
-    "license": "ISC",
-    "dependencies": {
-        "hookable": "^5.5.3",
-        "just-kebab-case": "^4.2.0",
-        "just-pascal-case": "^3.2.0",
-        "vue": "^3.2.45"
+        "build": "pnpm -r run build",
+        "dev": "pnpm --filter ./playground run dev",
+        "playground": "npm run dev"
     },
     "devDependencies": {
         "@eslint/js": "^9.0.0",
+        "@types/node": "^24.3.0",
         "@typescript-eslint/eslint-plugin": "^8.0.0",
         "@typescript-eslint/parser": "^8.0.0",
-        "eslint": "^9.0.0",
-        "typescript": "^5.0.0",
-        "vite": "^7.0.4",
+        "typescript": "^5.8.3",
         "vitest": "^3.2.4"
+    },
+    "repository": {
+        "url": "git://github.com/mindtwo/app-component.git."
     }
 }

@@ -11,6 +11,7 @@
 
     <script type="module" src="../js/advanced/basic-event-component.js"></script>
     <script type="module" src="../js/advanced/global-event-component.js"></script>
+    <script type="module" src="../js/advanced/unplugin-example-component.js"></script>
 </head>
 
 <body>
@@ -74,6 +75,33 @@
         <script>
 
         </script>
+    </div>
+
+    <div class="example-section">
+        <h2>Unplugin defineAppComponent Usage</h2>
+        <p>This example demonstrates the use of the <code>defineAppComponent</code> un provided by the Vite plugin.
+        </p>
+        <p>The un transforms the component definition at build time, simplifying the syntax for creating app
+            components.</p>
+
+        <div class="code-example">
+            <h4>Usage:</h4>
+            <pre><code>// Instead of:
+import { AppComponent } from '@mindtwo/app-component';
+const component = AppComponent.create({...});
+
+// You can use:
+const component = defineAppComponent({...});</code></pre>
+        </div>
+
+        <div class="component-container">
+            <unplugin-example-component auto-mount></unplugin-example-component>
+        </div>
+
+        <div class="component-container">
+            <h4>Second Instance:</h4>
+            <unplugin-example-component auto-mount></unplugin-example-component>
+        </div>
     </div>
 </body>
 

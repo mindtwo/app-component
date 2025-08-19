@@ -1,4 +1,4 @@
-import { AppComponent } from '../../../dist/app-component';
+import { AppComponent } from '@mindtwo/app-component';
 import CssVarDisplay from './components/CssVarDisplay.vue';
 
 AppComponent.create({

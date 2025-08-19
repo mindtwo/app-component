@@ -86,3 +86,33 @@
     background: #d1ecf1;
     color: #0c5460;
 }
+
+/* Code example styles */
+.code-example {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.code-example h4 {
+    margin: 0 0 0.5rem 0;
+    color: #495057;
+}
+
+.code-example pre {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 0;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.code-example code {
+    font-family: inherit;
+}

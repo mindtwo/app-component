@@ -1,4 +1,4 @@
-import { AppComponent } from '../../../dist/app-component';
+import { AppComponent } from '@mindtwo/app-component';
 import Counter from './components/Counter.vue';
 
 AppComponent.create({

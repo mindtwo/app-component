@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "./built",
+        "outDir": "./dist",
         "target": "es2022",
         "lib": ["es2022", "dom"],
         "strict": true,
@@ -13,6 +13,6 @@
         "allowSyntheticDefaultImports": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
-    }
-    // "include": ["./src/**/*"]
+    },
+    "exclude": ["dist", "eslint.config.js"]
 }

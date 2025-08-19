@@ -1,0 +1,41 @@
+{
+    "name": "@mindtwo/unplugin-app-component",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Vite plugin to define app-components and other utility to use with the plugin",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./vite": "./dist/vite.js",
+        "./rolldown": "./dist/rolldown.js",
+        "./rollup": "./dist/rollup.js",
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "lint": "eslint --cache .",
+        "lint:fix": "npm run lint --fix",
+        "build": "tsdown",
+        "dev": "tsdown -w",
+        "test": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "author": "mindtwo",
+    "license": "ISC",
+    "dependencies": {
+        "@unplugin/macros": "jsr:^0.18.0"
+    },
+    "devDependencies": {
+        "@sxzz/test-utils": "^0.5.9",
+        "tsdown": "^0.14.1",
+        "typescript": "^5.9.2",
+        "unplugin": "^2.3.6"
+    },
+    "peerDependencies": {
+        "vite": "^6.0.0 || ^7.0.0"
+    }
+}

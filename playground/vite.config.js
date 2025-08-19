@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import AppComponentPlugin from '@mindtwo/unplugin-app-component/vite';
 
 export default defineConfig({
-    clearScreen: false, // 👈 prevents truncating logs
-    logLevel: 'info', // 'error' hides too much, 'debug' is often too noisy
+    clearScreen: false,
+    logLevel: 'info',
     //
-    plugins: [vue()],
+    plugins: [vue(), AppComponentPlugin()],
 });
