@@ -4,16 +4,12 @@ import UnpluginExampleComponent from './components/UnpluginExampleComponent.vue'
 defineAppComponent({
     name: 'unplugin-example-component',
     component: UnpluginExampleComponent,
-    options: {
-        shadow: false,
-        autoMount: true,
-        hooks: {
-            mounting: () => {
-                console.log('Unplugin example component is about to mount');
-            },
-            mounted: () => {
-                console.log('Unplugin example component mounted successfully');
-            },
+    hooks: {
+        mounting: () => {
+            console.log('Unplugin example component is about to mount');
+        },
+        mounted: () => {
+            console.log('Unplugin example component mounted successfully');
         },
     },
 });

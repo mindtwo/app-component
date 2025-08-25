@@ -3,9 +3,7 @@ import { Component } from 'vue';
 
 import { createLogger } from './lib/logger';
 import { ComponentHooks } from './lib/hooks';
-import AppComponentBridge, {
-    WindowWithAppComponentBridge,
-} from './AppComponentBridge';
+import AppComponentBridge, { WindowWithAppComponentBridge } from './AppComponentBridge';
 import AppComponentHtmlElement from './AppComponentHtmlElement';
 import {
     AppComponentOptions,
@@ -19,28 +17,19 @@ class AppComponent {
     // Constructor implementation
     private constructor(options: AppComponentOptions, hooks: ComponentHooks) {
         // Create a logger instance
-        const _logger = createLogger(
-            options.debug,
-            options.name || 'AppComponent'
-        );
+        const _logger = createLogger(options.debug, options.name || 'AppComponent');
 
         // Convert the name to PascalCase and kebab-case
         this.name = pascalCase(options.name);
 
         // Skip if the custom element already exists
         if (window.customElements.get(options.elementName)) {
-            _logger.warn(
-                `Custom element ${options.elementName} already exists.`
-            );
+            _logger.warn(`Custom element ${options.elementName} already exists.`);
             return;
         }
 
         // Create the bridge instance
-        const bridge = new AppComponentBridge(
-            this.name,
-            options.component,
-            hooks
-        );
+        const bridge = new AppComponentBridge(this.name, options.component, hooks);
 
         // Register the component in the global window object
         const w = window as WindowWithAppComponentBridge;

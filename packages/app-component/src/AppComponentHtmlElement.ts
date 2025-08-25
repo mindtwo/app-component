@@ -23,11 +23,7 @@ export default class AppComponentHtmlElement extends HTMLElement {
     props: { [key: string]: string } = {};
     attrs: { [key: string]: string } = {};
 
-    constructor(
-        name: string,
-        useShadowRoot: boolean = false,
-        hooks?: ComponentHooks
-    ) {
+    constructor(name: string, useShadowRoot: boolean = false, hooks?: ComponentHooks) {
         super();
 
         // Create a logger instance
@@ -58,7 +54,9 @@ export default class AppComponentHtmlElement extends HTMLElement {
     }
 
     getWrapperId(): string {
-        return `${this.name}-wrapper`;
+        const wrapperId = `${this.name}-wrapper`;
+
+        return wrapperId;
     }
 
     /**
@@ -68,9 +66,7 @@ export default class AppComponentHtmlElement extends HTMLElement {
      */
     getWrapper(): HTMLElement {
         if (!this.wrapper) {
-            this._logger.error(
-                `Wrapper not found for app component: ${this.name}`
-            );
+            this._logger.error(`Wrapper not found for app component: ${this.name}`);
             return this;
         }
 
@@ -128,9 +124,7 @@ export default class AppComponentHtmlElement extends HTMLElement {
         this.initComponentDOM();
 
         if (!this.wrapper) {
-            this._logger.error(
-                `Wrapper not initialized for app component: ${this.name}`
-            );
+            this._logger.error(`Wrapper not initialized for app component: ${this.name}`);
             return null;
         }
 
@@ -177,9 +171,7 @@ export default class AppComponentHtmlElement extends HTMLElement {
             if (attrName === 'auto-mount') {
                 // Handle auto-mount attribute
                 this.autoMount =
-                    attr.value === undefined || attr.value === ''
-                        ? true
-                        : attr.value === 'true';
+                    attr.value === undefined || attr.value === '' ? true : attr.value === 'true';
 
                 continue;
             }

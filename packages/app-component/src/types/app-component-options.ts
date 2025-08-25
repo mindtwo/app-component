@@ -45,10 +45,7 @@ export interface AppComponentOptions {
     };
 }
 
-export type AppComponentOptionsPartial = PartialButKeep<
-    AppComponentOptions,
-    'name' | 'component'
->;
+export type AppComponentOptionsPartial = PartialButKeep<AppComponentOptions, 'name' | 'component'>;
 
 /**
  * Create an AppComponentOptions object with default values for optional properties.
