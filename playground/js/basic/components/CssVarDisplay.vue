@@ -27,9 +27,7 @@ function getEffectiveRoot(el) {
 
 onMounted(() => {
     if (el.value) {
-        const cssVar = getComputedStyle(el.value).getPropertyValue(
-            `--${props.cssVarName}`
-        );
+        const cssVar = getComputedStyle(el.value).getPropertyValue(`--${props.cssVarName}`);
 
         cssVarValue.value = cssVar ? cssVar.trim() : '';
     }
