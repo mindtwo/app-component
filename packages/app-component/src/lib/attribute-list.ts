@@ -1,3 +1,9 @@
+/**
+ * List of HTML attribute names.
+ * This list is based on the HTML Living Standard and includes common attributes.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes
+ */
 const NAMES: string[] = [
     'accept',
     'accept-charset',

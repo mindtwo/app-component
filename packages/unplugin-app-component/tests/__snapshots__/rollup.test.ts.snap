@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`rollup > basic.js 1`] = `
+"// basic.js
+import { AppComponent } from '@mindtwo/app-component';
+
+const component = await AppComponent.create({
+    name: 'test-component',
+});
+"
+`;

@@ -1,0 +1,118 @@
+/* Advanced Components Styles */
+.event-component, .message-component, 
+.counter-display-component, .counter-controls-component, .counter-history-component {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.count-display {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    color: #007bff;
+    margin: 20px 0;
+}
+
+.message-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.messages, .history-items {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.message, .history-item {
+    padding: 8px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.no-messages, .no-history {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+.event-log {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 20px 0;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.event-log .event-item {
+    margin-bottom: 5px;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.event-log .event-mounted {
+    background: #d4edda;
+    color: #155724;
+}
+
+.event-log .event-unmounted {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.event-log .event-beforemount {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.event-log .event-custom {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Code example styles */
+.code-example {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.code-example h4 {
+    margin: 0 0 0.5rem 0;
+    color: #495057;
+}
+
+.code-example pre {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 0;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.code-example code {
+    font-family: inherit;
+}

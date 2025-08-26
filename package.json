@@ -1,42 +1,31 @@
 {
-    "name": "@mindtwo/app-component",
-    "version": "0.3.8",
-    "description": "Helper to mount vue components to the dom inside a vue app",
-    "files": [
-        "dist"
-    ],
-    "repository": {
-        "url": "git://github.com/mindtwo/app-component.git."
-    },
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.mjs",
-    "exports": {
-        ".": {
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.cjs",
-            "types": "./dist/index.d.ts"
-        }
-    },
+    "name": "@mindtwo/app-component-repo",
+    "private": true,
+    "version": "",
+    "type": "module",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "unbuild",
-        "babel": "babel src -d dist"
-    },
-    "author": "mindtwo",
-    "license": "ISC",
-    "dependencies": {
-        "hookable": "^5.5.3",
-        "just-kebab-case": "^4.2.0",
-        "just-pascal-case": "^3.2.0",
-        "vue": "^3.2.45"
+        "build": "pnpm --filter './packages/**' prepack",
+        "types": "pnpm -r run types",
+        "lint:check": "pnpm -r run lint:check",
+        "lint:fix": "pnpm -r run lint:fix",
+        "test:unit": "pnpm -r run test",
+        "test:types": "pnpm --filter './packages/**' typecheck",
+        "dev": "pnpm --filter ./playground run dev",
+        "playground": "npm run dev"
     },
     "devDependencies": {
-        "eslint": "^8.30.0",
-        "eslint-config-semistandard": "^17.0.0",
-        "eslint-config-standard": "^17.0.0",
-        "eslint-plugin-import": "^2.26.0",
-        "eslint-plugin-n": "^15.6.0",
-        "eslint-plugin-promise": "^6.1.1",
-        "unbuild": "^1.2.1"
+        "@eslint/js": "^9.34.0",
+        "@types/node": "^24.3.0",
+        "@typescript-eslint/eslint-plugin": "^8.41.0",
+        "@typescript-eslint/parser": "^8.41.0",
+        "consola": "^3.4.2",
+        "semver": "^7.7.2",
+        "tinyexec": "^1.0.1",
+        "tinyglobby": "^0.2.14",
+        "typescript": "^5.9.2",
+        "vitest": "^3.2.4"
+    },
+    "repository": {
+        "url": "git://github.com/mindtwo/app-component.git."
     }
 }

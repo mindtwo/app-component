@@ -1,0 +1,260 @@
+/* Basic Component Styles */
+.counter-component {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.counter-button {
+    margin: 5px;
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.counter-button:hover {
+    background: #0056b3;
+}
+
+.greeting-component {
+    text-align: center;
+    padding: 20px;
+    background: #e8f5e8;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.manual-component {
+    text-align: center;
+    padding: 20px;
+    background: #fff3cd;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.dynamic-component {
+    text-align: center;
+    padding: 20px;
+    background: #f0f8ff;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+/* Todo List Component Styles */
+.todo-list {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+}
+
+.todo-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.todo-input-field {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.add-button {
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.add-button:hover {
+    background: #0056b3;
+}
+
+.todo-items {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.todo-item.completed .todo-text {
+    text-decoration: line-through;
+    color: #888;
+}
+
+.todo-checkbox {
+    margin: 0;
+}
+
+.todo-text {
+    flex: 1;
+    font-size: 14px;
+}
+
+.remove-button {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-button:hover {
+    background: #c82333;
+}
+
+.todo-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+/* User Card Component Styles */
+.user-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.user-avatar {
+    margin-right: 20px;
+}
+
+.avatar-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.user-email {
+    margin: 0 0 5px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.user-role {
+    margin: 0 0 15px 0;
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.action-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.action-button.primary {
+    background: #007bff;
+    color: white;
+}
+
+.action-button.primary:hover {
+    background: #0056b3;
+}
+
+.action-button.secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.action-button.secondary:hover {
+    background: #545b62;
+}
+
+.user-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-online {
+    background: #28a745;
+}
+
+.status-offline {
+    background: #6c757d;
+}
+
+.status-away {
+    background: #ffc107;
+}
+
+.status-busy {
+    background: #dc3545;
+}
+
+.status-text {
+    text-transform: capitalize;
+}
