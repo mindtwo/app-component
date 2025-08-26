@@ -27,6 +27,8 @@ export default class AppComponentBridge {
     // Hooks for the component
     private hooks: ComponentHooks;
 
+    private styles?: string;
+
     // Root component of the app
     private rootComponent: Component;
 
@@ -36,13 +38,14 @@ export default class AppComponentBridge {
     // HTML element associated with the component
     private element: AppComponentHtmlElement | null = null;
 
-    constructor(name: string, component: Component, hooks: ComponentHooks) {
+    constructor(name: string, component: Component, hooks: ComponentHooks, styles?: string) {
         this._logger = createLogger();
 
         // Set properties
         this.name = name;
         this.rootComponent = component;
         this.hooks = hooks;
+        this.styles = styles;
     }
 
     public setElement(element: AppComponentHtmlElement): void {
@@ -70,9 +73,7 @@ export default class AppComponentBridge {
      */
     public async create(): Promise<void> {
         if (!this.element) {
-            this._logger.error(
-                `Element not set for app component: ${this.name}`
-            );
+            this._logger.error(`Element not set for app component: ${this.name}`);
             return;
         }
 
@@ -88,9 +89,7 @@ export default class AppComponentBridge {
 
         // Skip if the Vue app is already created
         if (this.vueApp) {
-            this._logger.warn(
-                `Vue app already created for component: ${this.name}`
-            );
+            this._logger.warn(`Vue app already created for component: ${this.name}`);
             return;
         }
 
@@ -108,6 +107,16 @@ export default class AppComponentBridge {
         this.vueApp.provide('$getRoot', () => this.element?.root());
 
         await this.hooks.emit('created', this, this.vueApp);
+
+        // Add stylesheet to root if provided
+        if (this.styles) {
+            // TODO support creation of style elements
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = this.styles;
+
+            this.element.root().appendChild(link);
+        }
     }
 
     /**
@@ -122,16 +131,12 @@ export default class AppComponentBridge {
         this._logger.debug(`Mounting app component: ${this.name}`);
 
         if (!this.element) {
-            this._logger.error(
-                `Element not set for app component: ${this.name}`
-            );
+            this._logger.error(`Element not set for app component: ${this.name}`);
             return;
         }
 
         if (!this.vueApp) {
-            this._logger.error(
-                `Vue app not created for component: ${this.name}`
-            );
+            this._logger.error(`Vue app not created for component: ${this.name}`);
             return;
         }
 
@@ -214,11 +219,7 @@ export default class AppComponentBridge {
      * @memberof AppComponentBridge
      * @return {void}
      */
-    public on(
-        hookName: string,
-        callback: (data?: any) => void,
-        once: boolean = false
-    ): void {
+    public on(hookName: string, callback: (data?: any) => void, once: boolean = false): void {
         this.hooks.on(hookName, callback, once);
     }
 

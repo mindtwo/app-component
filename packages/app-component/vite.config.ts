@@ -9,16 +9,12 @@ export default defineConfig({
         preserveSymlinks: true,
         dedupe: ['vue'],
     },
-    server: {
-        fs: {
-            allow: ['..'],
-        },
-    },
     build: {
         target: 'esnext',
         outDir: 'dist',
         emptyOutDir: true,
         sourcemap: true,
+        minify: true,
         lib: {
             entry: resolve(__dirname, 'src/index.ts'),
             name: 'AppComponent',

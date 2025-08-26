@@ -29,7 +29,7 @@ class AppComponent {
         }
 
         // Create the bridge instance
-        const bridge = new AppComponentBridge(this.name, options.component, hooks);
+        const bridge = new AppComponentBridge(this.name, options.component, hooks, options.style);
 
         // Register the component in the global window object
         const w = window as WindowWithAppComponentBridge;
@@ -113,7 +113,7 @@ class AppComponent {
         createLogger(options.debug, options.name || 'AppComponent');
 
         const hooks = AppComponent.getHooksInstance(
-            options.name,
+            options.name as string,
             options.debug,
             options.globalHooks
         );
@@ -146,7 +146,6 @@ class AppComponent {
         // TODO: return something?
     }
 
-    // TODO: maybe add global hooks via "channels" like "component:hookname"?
     protected static getHooksInstance(
         name: string,
         debug: boolean = false,

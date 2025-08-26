@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,63 +13,63 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
         }
-        
+
         .header {
             text-align: center;
             color: white;
             margin-bottom: 50px;
         }
-        
+
         .header h1 {
             font-size: 3rem;
             margin: 0 0 20px 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
-        
+
         .header p {
             font-size: 1.2rem;
             opacity: 0.9;
             margin: 0;
         }
-        
+
         .examples-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 30px;
             margin-top: 40px;
         }
-        
+
         .example-card {
             background: white;
             border-radius: 12px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .example-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         }
-        
+
         .example-card h3 {
             color: #333;
             margin: 0 0 15px 0;
             font-size: 1.5rem;
         }
-        
+
         .example-card p {
             color: #666;
             margin: 0 0 20px 0;
             line-height: 1.6;
         }
-        
+
         .example-card a {
             display: inline-block;
             background: #667eea;
@@ -79,98 +80,100 @@
             font-weight: 500;
             transition: background 0.3s ease;
         }
-        
+
         .example-card a:hover {
             background: #5a67d8;
         }
-        
+
         .features {
             margin-top: 60px;
             text-align: center;
         }
-        
+
         .features h2 {
             color: white;
             font-size: 2rem;
             margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
-        
+
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 30px;
         }
-        
+
         .feature-card {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 12px;
             padding: 30px;
             color: white;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .feature-card h3 {
             margin: 0 0 15px 0;
             font-size: 1.3rem;
         }
-        
+
         .feature-card p {
             margin: 0;
             opacity: 0.9;
             line-height: 1.6;
         }
-        
+
         .footer {
             text-align: center;
             margin-top: 80px;
             padding: 40px 0;
-            border-top: 1px solid rgba(255,255,255,0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .footer p {
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
             margin: 0;
         }
-        
+
         .footer a {
             color: white;
             text-decoration: none;
         }
-        
+
         .footer a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>App Component Playground</h1>
             <p>Interactive examples and demos for @mindtwo/app-component</p>
         </div>
-        
+
         <div class="examples-grid">
             <div class="example-card">
                 <h3>Basic Examples</h3>
-                <p>Simple components demonstrating core functionality like counters, greetings, and manual mounting/unmounting.</p>
+                <p>Simple components demonstrating core functionality like counters, greetings, and manual
+                    mounting/unmounting.</p>
                 <a href="examples/basic.html">View Basic Examples</a>
             </div>
-            
+
             <div class="example-card">
                 <h3>Vue Components</h3>
                 <p>Real-world Vue components including todo lists, user cards, and dynamic property updates.</p>
                 <a href="examples/vue-components.html">View Vue Examples</a>
             </div>
-            
+
             <div class="example-card">
                 <h3>Advanced Usage</h3>
                 <p>Complex scenarios with event handling, lifecycle management, and component communication.</p>
                 <a href="examples/advanced.html">View Advanced Examples</a>
             </div>
         </div>
-        
+
         <div class="features">
             <h2>Key Features</h2>
             <div class="features-grid">
@@ -178,41 +181,42 @@
                     <h3>🚀 Easy Integration</h3>
                     <p>Mount Vue components into any existing application with minimal setup.</p>
                 </div>
-                
+
                 <div class="feature-card">
                     <h3>🎛️ Dynamic Props</h3>
                     <p>Pass data to components via HTML attributes or JavaScript properties.</p>
                 </div>
-                
+
                 <div class="feature-card">
                     <h3>🔄 Lifecycle Management</h3>
                     <p>Automatic mounting/unmounting with full lifecycle event support.</p>
                 </div>
-                
+
                 <div class="feature-card">
                     <h3>🎯 Custom Elements</h3>
                     <p>Use your Vue components as standard HTML custom elements.</p>
                 </div>
-                
+
                 <div class="feature-card">
                     <h3>📦 Framework Agnostic</h3>
                     <p>Integrate Vue components into any web application or framework.</p>
                 </div>
-                
+
                 <div class="feature-card">
                     <h3>🛠️ TypeScript Support</h3>
                     <p>Full TypeScript definitions for better development experience.</p>
                 </div>
             </div>
         </div>
-        
+
         <div class="footer">
             <p>
-                Built with ❤️ by mindtwo | 
-                <a href="https://github.com/mindtwo/app-component">GitHub</a> | 
+                Built with ❤️ by mindtwo |
+                <a href="https://github.com/mindtwo/app-component">GitHub</a> |
                 <a href="../README.md">Documentation</a>
             </p>
         </div>
     </div>
 </body>
+
 </html>

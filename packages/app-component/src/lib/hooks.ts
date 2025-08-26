@@ -47,17 +47,17 @@ function isValidComponentHook(hookName: string): hookName is ComponentHookName {
 export class ComponentHooks extends Hookable {
     private _logger: Logger;
 
-    private componentName?: string;
+    private hookableName?: string;
 
-    constructor(componentName?: string, debug: boolean = false) {
+    constructor(hookableName?: string, debug: boolean = false) {
         super();
 
         this._logger = createLogger();
 
-        this.componentName = componentName;
+        this.hookableName = hookableName;
         if (debug) {
             createDebugger(this, {
-                tag: this.componentName || 'ComponentHooks',
+                tag: this.hookableName || 'ComponentHooks',
             });
         }
     }
@@ -70,16 +70,12 @@ export class ComponentHooks extends Hookable {
      * @param {boolean} [once=false] - If true, the callback will be called only once.
      * @return {void}
      */
-    public on(
-        hookName: ComponentHookName | string,
-        callback: HookCallback,
-        once?: boolean
-    ): void {
+    public on(hookName: ComponentHookName | string, callback: HookCallback, once?: boolean): void {
         if (!isValidComponentHook(hookName)) {
-            this._logger.warn(
-                `Invalid hook name: ${hookName}. The callback may not be called.`
-            );
+            this._logger.warn(`Invalid hook name: ${hookName}. The callback may not be called.`);
         }
+
+        hookName = this.formatHookName(hookName);
 
         if (once) {
             this.hookOnce(hookName, callback);
@@ -96,15 +92,12 @@ export class ComponentHooks extends Hookable {
      * @param {HookCallback} callback - The callback function to remove.
      * @return {void}
      */
-    public off(
-        hookName: ComponentHookName | string,
-        callback: HookCallback
-    ): void {
+    public off(hookName: ComponentHookName | string, callback: HookCallback): void {
         if (!isValidComponentHook(hookName)) {
-            this._logger.warn(
-                `Invalid hook name: ${hookName}. The callback may not be removed.`
-            );
+            this._logger.warn(`Invalid hook name: ${hookName}. The callback may not be removed.`);
         }
+
+        hookName = this.formatHookName(hookName);
 
         this.removeHook(hookName, callback);
     }
@@ -125,15 +118,12 @@ export class ComponentHooks extends Hookable {
      * @param {...unknown[]} args - The arguments to pass to the hook callbacks.
      * @return {Promise<any>}
      */
-    public async emit(
-        hookName: ComponentHookName | string,
-        ...args: unknown[]
-    ): Promise<unknown> {
+    public async emit(hookName: ComponentHookName | string, ...args: unknown[]): Promise<unknown> {
         if (!isValidComponentHook(hookName)) {
-            this._logger.warn(
-                `Invalid hook name: ${hookName}. The hook may not be called.`
-            );
+            this._logger.warn(`Invalid hook name: ${hookName}. The hook may not be called.`);
         }
+
+        hookName = this.formatHookName(hookName);
 
         const result = await this.callHook(hookName, ...args);
 
@@ -152,5 +142,17 @@ export class ComponentHooks extends Hookable {
         ...args: unknown[]
     ): Promise<unknown> {
         return await this.emit(hookName, ...args);
+    }
+
+    private formatHookName(hookName: ComponentHookName | string): string {
+        if (!this.hookableName) {
+            return hookName;
+        }
+
+        if (hookName.startsWith(`${this.hookableName}:`)) {
+            return hookName;
+        }
+
+        return `${this.hookableName}:${hookName}`;
     }
 }
