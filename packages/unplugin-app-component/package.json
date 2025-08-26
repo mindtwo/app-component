@@ -27,7 +27,6 @@
     "author": "mindtwo",
     "license": "ISC",
     "devDependencies": {
-        "@unplugin/macros": "jsr:^0.18.0",
         "@sxzz/test-utils": "^0.5.9",
         "just-kebab-case": "^4.2.0",
         "just-pascal-case": "^3.2.0",
@@ -37,6 +36,5 @@
     },
     "peerDependencies": {
         "vite": "^6.0.0 || ^7.0.0"
-    },
-    "version": ""
+    }
 }
