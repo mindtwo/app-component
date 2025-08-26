@@ -3,10 +3,23 @@
 set -e
 
 # Restore all git changes
-git restore -s@ -SW  -- packages examples docs
+git restore -s@ -SW  -- packages playground
 
 # Build all once to ensure things are nice
-pnpm build
+# pnpm build
+
+# Get next version tag
+PACKAGE_VERSION=$(npx tsx scripts/calculateVersion.ts)
+
+echo "Next version: $PACKAGE_VERSION"
+
+# Check if the version is already set
+$(npx tsx scripts/bump.ts "$PACKAGE_VERSION")
+
+# Create a new tag
+TAG_NAME="v$PACKAGE_VERSION"
+echo "Creating tag: $TAG_NAME"
+git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
 
 # Release packages
 for PKG in packages/* ; do
@@ -20,6 +33,6 @@ for PKG in packages/* ; do
 #   if [[ $PKG != "docs" ]]; then
 #     cp $REPO_ROOT/README.md .
 #   fi
-#   pnpm publish --access public --no-git-checks --tag $TAG
+  pnpm publish --access public --no-git-checks --tag $TAG
   popd > /dev/null
 done

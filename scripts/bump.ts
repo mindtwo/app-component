@@ -1,10 +1,11 @@
 import { consola } from 'consola';
-import { loadWorkspace } from './_utils';
+import { getLatestTag, loadWorkspace } from './_utils';
 
 async function main() {
     const workspace = await loadWorkspace(process.cwd());
 
-    const newVersion = process.argv[2];
+    const currentVersion = await getLatestTag();
+    const newVersion = currentVersion ?? process.argv[2];
     if (!newVersion) {
         throw new Error('Please provide version!');
     }
