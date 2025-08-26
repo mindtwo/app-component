@@ -1,43 +1,44 @@
 {
-    "name": "@mindtwo/app-component",
-    "version": "1.0.0",
-    "type": "module",
-    "description": "Helper to mount vue components to the dom inside a vue app",
-    "files": [
-        "dist"
-    ],
-    "main": "./dist/app-component.umd.cjs",
-    "module": "./dist/app-component.js",
-    "exports": {
-        ".": {
-            "import": "./dist/app-component.js",
-            "require": "./dist/app-component.umd.cjs"
-        }
-    },
-    "scripts": {
-        "build": "vite build",
-        "lint": "eslint src --ext .ts,.js,.vue",
-        "lint:fix": "eslint src --ext .ts,.js,.vue --fix",
-        "typecheck": "tsc --noEmit"
-    },
-    "author": "mindtwo",
-    "license": "ISC",
-    "dependencies": {
-        "hookable": "^5.5.3",
-        "just-kebab-case": "^4.2.0",
-        "just-pascal-case": "^3.2.0"
-    },
-    "devDependencies": {
-        "@eslint/js": "^9.0.0",
-        "@typescript-eslint/eslint-plugin": "^8.0.0",
-        "@typescript-eslint/parser": "^8.0.0",
-        "eslint": "^9.0.0",
-        "typescript": "^5.0.0",
-        "vite": "^7.0.4",
-        "vitest": "^3.2.4",
-        "vue": "^3.5.17"
-    },
-    "peerDependencies": {
-        "vue": "^3.5.17"
+  "name": "@mindtwo/app-component",
+  "type": "module",
+  "description": "Helper to mount vue components to the dom inside a vue app",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/app-component.umd.cjs",
+  "module": "./dist/app-component.js",
+  "exports": {
+    ".": {
+      "import": "./dist/app-component.js",
+      "require": "./dist/app-component.umd.cjs"
     }
+  },
+  "scripts": {
+    "prepack": "vite build",
+    "lint:check": "eslint src --ext .ts,.js,.vue",
+    "lint:fix": "eslint src --ext .ts,.js,.vue --fix",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run prepack"
+  },
+  "author": "mindtwo",
+  "license": "ISC",
+  "dependencies": {
+    "hookable": "^5.5.3",
+    "just-kebab-case": "^4.2.0",
+    "just-pascal-case": "^3.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^7.0.4",
+    "vitest": "^3.2.4",
+    "vue": "^3.5.17"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.17"
+  },
+  "version": "0.0.10"
 }

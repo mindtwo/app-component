@@ -8,8 +8,8 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@mindtwo/app-component": "workspace:*",
-        "@mindtwo/unplugin-app-component": "workspace:*",
+        "@mindtwo/app-component": "../packages/app-component",
+        "@mindtwo/unplugin-app-component": "../packages/unplugin-app-component",
         "vue": "^3.2.45"
     },
     "devDependencies": {
