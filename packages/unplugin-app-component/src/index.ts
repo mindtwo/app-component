@@ -30,11 +30,7 @@ export const AppComponentPlugin: UnpluginInstance<PluginOptions | undefined, fal
             transform: defineAppComponentTrasform,
 
             async buildStart() {
-                const templatePath = path.resolve(
-                    __dirname,
-                    '../src/util',
-                    'manifest-loader.template.js'
-                );
+                const templatePath = path.resolve(__dirname, 'manifest-loader.template');
                 templateContent = await readFile(templatePath, 'utf-8');
 
                 // store or emit it later

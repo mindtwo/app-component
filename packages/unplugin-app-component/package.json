@@ -22,7 +22,8 @@
         "typecheck": "tsc --noEmit",
         "lint:check": "eslint --cache .",
         "lint:fix": "npm run lint --fix",
-        "build": "npm run typecheck && npm run prepack"
+        "build": "npm run typecheck && npm run prepack",
+        "postbuild": "cp ./src/util/manifest-loader.template.js ./dist/manifest-loader.template"
     },
     "author": "mindtwo",
     "license": "ISC",
