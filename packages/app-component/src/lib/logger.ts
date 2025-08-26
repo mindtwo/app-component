@@ -15,7 +15,7 @@ class Logger {
 
         // Private constructor to prevent instantiation
         if (printDebug) {
-            console.log('Logger instance created');
+            this.log('debug', 'Logger initialized with debug mode enabled');
         }
     }
 
@@ -34,17 +34,11 @@ class Logger {
 
         // Always show error logs; skip others if debug is false
         if (!this._debug && level !== 'error') {
-            // console.log('Skipping log:', level, ...data);
-
             return;
         }
 
         // Add position to the data
-        console.trace(
-            `%c${prefix}`,
-            'color: blue; font-weight: bold;',
-            ...data
-        );
+        console.trace(`%c${prefix}`, 'color: blue; font-weight: bold;', ...data);
     }
 
     /**

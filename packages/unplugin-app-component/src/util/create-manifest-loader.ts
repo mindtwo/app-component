@@ -1,4 +1,5 @@
 import { PluginOptions } from 'app-component-plugin';
+import pascalCase from 'just-pascal-case';
 
 /**
  * Get the filename for the manifest loader based on the provided options.
@@ -27,20 +28,24 @@ const resolveManifestLoaderFileName = (
  *
  * @param {string} manifestUrl - The URL to fetch the manifest from.
  * @param {string} [templateContent] - The template content to use.
- * @param {string} [entry] - The entry point for the application (optional).
+ * @param {string} [name] - The entry point for the application (optional).
  * @param {string} basePath - The base path for loading assets.
  * @return {*}  {string}
  */
 const getManifestLoaderContent = (
     manifestUrl: string,
     templateContent: string,
+    name: string = 'AppComponent',
     basePath: string = '/'
 ): string => {
-    console.log(`Generating manifest loader with URL: ${manifestUrl} and base path: ${basePath}`);
+    // Ensure the name is in PascalCase for consistency
+    name = pascalCase(name);
 
     return templateContent
         .replace('__MANIFEST_URL__', `"${manifestUrl}"`)
         .replace('__BASE_PATH__', `"${basePath}"`)
+        .replace('__APP_COMPONENT_NAME__', name)
+        .replaceAll('__APP_COMPONENT_LOADER_NAME__', `${name}Loader`)
         .trim();
 };
 
@@ -71,6 +76,11 @@ export const createManifestLoader = (
         type: 'asset',
         name: 'manifest-loader',
         fileName: loaderFileName,
-        source: getManifestLoaderContent(manifestUrl, templateContent, options.basePath),
+        source: getManifestLoaderContent(
+            manifestUrl,
+            templateContent,
+            options.name,
+            options.basePath
+        ),
     });
 };

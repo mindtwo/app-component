@@ -5,6 +5,10 @@
     "type": "module",
     "scripts": {
         "build": "pnpm -r run build",
+        "types": "pnpm -r run types",
+        "lint": "pnpm -r run lint",
+        "test": "pnpm -r run test",
+        "typecheck": "pnpm -r run typecheck",
         "dev": "pnpm --filter ./playground run dev",
         "playground": "npm run dev"
     },

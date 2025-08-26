@@ -15,7 +15,6 @@
         }
     },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
         "build": "vite build",
         "lint": "eslint src --ext .ts,.js,.vue",
         "lint:fix": "eslint src --ext .ts,.js,.vue --fix",

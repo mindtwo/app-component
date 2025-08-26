@@ -14,5 +14,5 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
     },
-    "exclude": ["dist", "eslint.config.js"]
+    "exclude": ["**/dist/**", "eslint.config.js"]
 }
