@@ -136,11 +136,13 @@ const loadComponentFromManifest = async () => {
         );
 
         try {
+            // Fetch the manifest from the specified URL
             const response = await fetch(manifestFullUrl, {
                 headers: {
-                    'Content-Type': 'application/json',
                     Accept: 'application/json',
                 },
+                credentials: 'omit',
+                method: 'GET',
                 cache: 'no-cache',
             });
 
