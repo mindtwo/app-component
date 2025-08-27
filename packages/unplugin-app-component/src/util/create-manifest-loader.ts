@@ -42,9 +42,9 @@ const getManifestLoaderContent = (
     name = pascalCase(name);
 
     return templateContent
-        .replace('__MANIFEST_URL__', `"${manifestUrl}"`)
-        .replace('__BASE_PATH__', `"${basePath}"`)
-        .replace('__APP_COMPONENT_NAME__', name)
+        .replaceAll('__MANIFEST_URL__', `"${manifestUrl}"`)
+        .replaceAll('__BASE_PATH__', `"${basePath}"`)
+        .replaceAll('__APP_COMPONENT_NAME__', name)
         .replaceAll('__APP_COMPONENT_LOADER_NAME__', `${name}Loader`)
         .trim();
 };
