@@ -23,14 +23,15 @@ PACKAGE_VERSION=$(npx tsx scripts/calculateVersion.ts "$BUMP_TYPE")
 
 echo "Next version: $PACKAGE_VERSION"
 
-# Check if the version is already set
-$(npx tsx scripts/bump.ts "$PACKAGE_VERSION")
-
 # Create a new tag
 TAG_NAME="v$PACKAGE_VERSION"
 echo "Creating tag: $TAG_NAME"
 git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
-git push origin "$TAG_NAME"
+
+# Check if the version is already set
+$(npx tsx scripts/bump.ts)
+
+# git push origin "$TAG_NAME"
 
 # Release packages
 for PKG in packages/* ; do

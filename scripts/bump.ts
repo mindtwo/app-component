@@ -12,7 +12,7 @@ async function main() {
 
     // Update workspace package version
     for (const pkg of workspace.packages.filter((p) => !p.data.private)) {
-        workspace.setVersion(pkg.data.name, newVersion!);
+        workspace.setVersion(pkg.data.name, newVersion!.replace(/^v/, ''));
     }
 
     await workspace.save();
