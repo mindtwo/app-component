@@ -20,8 +20,8 @@ export default class AppComponentHtmlElement extends HTMLElement {
     // Attributes and props
     autoMount: boolean = false;
 
-    props: { [key: string]: string } = {};
-    attrs: { [key: string]: string } = {};
+    protected _props: { [key: string]: string } = {};
+    protected _attrs: { [key: string]: string } = {};
 
     constructor(name: string, useShadowRoot: boolean = false, hooks?: ComponentHooks) {
         super();
@@ -155,40 +155,72 @@ export default class AppComponentHtmlElement extends HTMLElement {
         );
     }
 
+    get attrs(): { [key: string]: string } {
+        if (Object.keys(this._attrs).length === 0) {
+            this.collectAttrs();
+        }
+
+        // Return the collected attributes
+        return this._attrs;
+    }
+
+    get props(): { [key: string]: string } {
+        if (Object.keys(this._props).length === 0) {
+            this.collectProps();
+        }
+
+        // Return the collected props
+        return this._props;
+    }
+
     /**
      * Get props and attributes for component
      *
      * @returns {Object}
      */
     private initAttributesAndProps() {
-        // TODO: value parsing
-        const props: { [key: string]: string } = {};
-        const attrs: { [key: string]: string } = {};
+        this.collectProps();
+        this.collectAttrs();
+    }
 
+    private collectProps(force: boolean = false): void {
+        if (Object.keys(this._props).length > 0 && !force) {
+            // Props already collected
+            return;
+        }
+
+        // TODO: value parsing
+        // Collect props from the component
         for (const attr of Array.from(this.attributes)) {
             const attrName = kebabCase(attr.name);
 
+            if (NAMES.includes(attrName) || attrName.startsWith('v-data-')) {
+                // Skip known attribute names
+                continue;
+            }
+
             if (attrName === 'auto-mount') {
-                // Handle auto-mount attribute
-                this.autoMount =
-                    attr.value === undefined || attr.value === '' ? true : attr.value === 'true';
-
+                this.autoMount = attr.value === 'true';
                 continue;
             }
 
-            if (NAMES.includes(attrName)) {
-                attrs[attrName] = attr.value;
-                continue;
-            }
-            props[attrName] = attr.value;
+            this._props[attrName] = attr.value;
+        }
+    }
+
+    private collectAttrs(force: boolean = false): void {
+        if (Object.keys(this._attrs).length > 0 && !force) {
+            // Attributes already collected
+            return;
         }
 
-        //
-        // for (const prop of Object.keys(props)) {
-        //     this.removeAttribute(prop);
-        // }
+        // Collect attributes from the component
+        for (const attr of Array.from(this.attributes)) {
+            const attrName = kebabCase(attr.name);
 
-        this.props = props;
-        this.attrs = attrs;
+            if (NAMES.includes(attrName)) {
+                this._attrs[attrName] = attr.value;
+            }
+        }
     }
 }
