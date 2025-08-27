@@ -2,14 +2,24 @@
 
 set -e
 
+# Accept bump type (default to "patch")
+BUMP_TYPE=$1
+VALID_BUMPS=("major" "minor" "patch")
+
+# Check if bump type is valid; otherwise, default to "patch"
+if [[ ! " ${VALID_BUMPS[@]} " =~ " ${BUMP_TYPE} " ]]; then
+  echo "⚠️  Unknown or missing bump type: '$BUMP_TYPE'. Defaulting to patch."
+  BUMP_TYPE="patch"
+fi
+
 # Restore all git changes
 git restore -s@ -SW  -- packages playground
 
 # Build all once to ensure things are nice
-# pnpm build
+pnpm build
 
 # Get next version tag
-PACKAGE_VERSION=$(npx tsx scripts/calculateVersion.ts)
+PACKAGE_VERSION=$(npx tsx scripts/calculateVersion.ts "$BUMP_TYPE")
 
 echo "Next version: $PACKAGE_VERSION"
 
@@ -20,6 +30,7 @@ $(npx tsx scripts/bump.ts "$PACKAGE_VERSION")
 TAG_NAME="v$PACKAGE_VERSION"
 echo "Creating tag: $TAG_NAME"
 git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+git push origin "$TAG_NAME"
 
 # Release packages
 for PKG in packages/* ; do

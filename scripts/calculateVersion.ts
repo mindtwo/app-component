@@ -9,8 +9,14 @@ async function main() {
         throw new Error('No version found. Please provide version!');
     }
 
+    let bumpType = process.argv[2] || 'patch';
+
+    if (!['major', 'minor', 'patch'].includes(bumpType)) {
+        bumpType = 'patch';
+    }
+
     // Set Version in current environment
-    const nextVersion = inc(newVersion, 'patch');
+    const nextVersion = inc(newVersion, bumpType);
 
     // Export the next version
     console.log(nextVersion);
