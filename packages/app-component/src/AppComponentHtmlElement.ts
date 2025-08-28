@@ -194,7 +194,7 @@ export default class AppComponentHtmlElement extends HTMLElement {
         for (const attr of Array.from(this.attributes)) {
             const attrName = kebabCase(attr.name);
 
-            if (NAMES.includes(attrName) || attrName.startsWith('v-data-')) {
+            if (NAMES.includes(attrName) || attrName.startsWith('data-v-')) {
                 // Skip known attribute names
                 continue;
             }

@@ -41,6 +41,9 @@ importers:
 
   packages/app-component:
     dependencies:
+      defu:
+        specifier: ^6.1.4
+        version: 6.1.4
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
