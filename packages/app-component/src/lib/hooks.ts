@@ -124,7 +124,7 @@ export class ComponentHooks extends Hookable {
         }
 
         hookName = this.formatHookName(hookName);
-
+        this._logger.debug(`Emitting hook: ${hookName}`, ...args);
         const result = await this.callHook(hookName, ...args);
 
         return result;
