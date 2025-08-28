@@ -48,3 +48,7 @@ for PKG in packages/* ; do
   pnpm publish --access public --no-git-checks --tag $TAG
   popd > /dev/null
 done
+
+# Clean up
+echo "Cleaning up..."
+git restore -s@ -SW  -- packages playground
