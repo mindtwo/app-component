@@ -113,7 +113,7 @@ class AppComponent {
         createLogger(options.debug, options.name || 'AppComponent');
 
         const hooks = AppComponent.getHooksInstance(
-            options.name as string,
+            options.hookableName as string,
             options.debug,
             options.globalHooks
         );
