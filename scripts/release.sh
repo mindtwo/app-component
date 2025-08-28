@@ -4,7 +4,8 @@ set -e
 
 # Accept bump type (default to "patch")
 BUMP_TYPE=$1
-VALID_BUMPS=("major" "minor" "patch", "git")
+VALID_BUMPS=("major" "minor" "patch" "git")
+REPO_ROOT="$(pwd)"
 
 # Check if bump type is valid; otherwise, default to "patch"
 if [[ ! " ${VALID_BUMPS[@]} " =~ " ${BUMP_TYPE} " ]]; then
@@ -61,5 +62,11 @@ for PKG in packages/* ; do
 done
 
 # Clean up
+if [[ "$BUMP_TYPE" == "git" ]]; then
+    echo "Skipping cleanup as bump type is 'git'."
+    exit 0
+fi
+
 echo "Cleaning up..."
 git restore -s@ -SW  -- packages playground
+git clean -fd -- packages playground
