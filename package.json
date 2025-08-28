@@ -12,7 +12,7 @@
         "test:types": "pnpm --filter './packages/**' typecheck",
         "dev": "pnpm --filter ./playground run dev",
         "playground": "npm run dev",
-        "release:patch": "sh ./scripts/release.sh",
+        "release:patch": "sh ./scripts/release.sh patch",
         "release:minor": "sh ./scripts/release.sh minor",
         "release:major": "sh ./scripts/release.sh major"
     },
