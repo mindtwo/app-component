@@ -8,7 +8,11 @@ describe('rollup', async () => {
     await testFixtures(
         '*.js',
         async (args, id) => {
-            const { snapshot } = await rollupBuild(id, [AppComponentPlugin()]);
+            const { snapshot } = await rollupBuild(id, [
+                AppComponentPlugin({
+                    manifestLoader: false,
+                }),
+            ]);
             return snapshot;
         },
         { cwd: path.resolve(dirname, 'fixtures'), promise: true }

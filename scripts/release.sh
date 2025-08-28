@@ -4,7 +4,8 @@ set -e
 
 # Accept bump type (default to "patch")
 BUMP_TYPE=$1
-VALID_BUMPS=("major" "minor" "patch")
+VALID_BUMPS=("major" "minor" "patch" "git")
+REPO_ROOT="$(pwd)"
 
 # Check if bump type is valid; otherwise, default to "patch"
 if [[ ! " ${VALID_BUMPS[@]} " =~ " ${BUMP_TYPE} " ]]; then
@@ -18,18 +19,29 @@ git restore -s@ -SW  -- packages playground
 # Build all once to ensure things are nice
 pnpm build
 
-# Get next version tag
-PACKAGE_VERSION=$(npx tsx scripts/calculateVersion.ts "$BUMP_TYPE")
+# Check if Bump Type is git
+if [[ "$BUMP_TYPE" == "git" ]]; then
+    echo "Bump type is 'git'. Skipping version bump and tag creation."
 
-echo "Next version: $PACKAGE_VERSION"
+    if [[ -z "$TAG" ]] ; then
+        TAG="latest"
+    fi
 
-# Create a new tag
-TAG_NAME="v$PACKAGE_VERSION"
-echo "Creating tag: $TAG_NAME"
-git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+    echo "Will release packages with tag $TAG"
+else
+    # Get next version tag
+    PACKAGE_VERSION=$(npx tsx scripts/calculateVersion.ts "$BUMP_TYPE")
 
-# Check if the version is already set
-$(npx tsx scripts/bump.ts)
+    echo "Next version: $PACKAGE_VERSION"
+
+    # Create a new tag
+    TAG_NAME="v$PACKAGE_VERSION"
+    echo "Creating tag: $TAG_NAME"
+    git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+
+    # Check if the version is already set
+    $(npx tsx scripts/bump.ts)
+fi
 
 # git push origin "$TAG_NAME"
 
@@ -41,10 +53,20 @@ for PKG in packages/* ; do
     TAG="latest"
   fi
   echo "⚡ Publishing $PKG with tag $TAG"
-#   cp $REPO_ROOT/LICENSE .
+  cp $REPO_ROOT/LICENSE .
 #   if [[ $PKG != "docs" ]]; then
 #     cp $REPO_ROOT/README.md .
 #   fi
   pnpm publish --access public --no-git-checks --tag $TAG
   popd > /dev/null
 done
+
+# Clean up
+if [[ "$BUMP_TYPE" == "git" ]]; then
+    echo "Skipping cleanup as bump type is 'git'."
+    exit 0
+fi
+
+echo "Cleaning up..."
+git restore -s@ -SW  -- packages playground
+git clean -fd -- packages playground
