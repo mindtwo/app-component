@@ -1,7 +1,8 @@
-import { App, Component, createApp } from 'vue';
+import { App, Component, createApp, h } from 'vue';
 import { type Logger, createLogger } from './lib/logger';
 import AppComponentHtmlElement from './AppComponentHtmlElement';
 import { ComponentHooks } from './lib/hooks';
+import defu from 'defu';
 
 export type WindowWithAppComponentBridge = Window &
     typeof globalThis & {
@@ -37,6 +38,9 @@ export default class AppComponentBridge {
 
     // HTML element associated with the component
     private element: AppComponentHtmlElement | null = null;
+
+    // Properties and attributes
+    private _props: { [key: string]: string } = {};
 
     constructor(name: string, component: Component, hooks: ComponentHooks, styles?: string) {
         this._logger = createLogger();
@@ -94,11 +98,27 @@ export default class AppComponentBridge {
         }
 
         // props
-        const props = this.element.props ?? {};
+        this._props = this.element.props ?? {};
+
+        // Create the Vue app instance
+        function baseSetup() {
+            // @ts-expect-error
+            const { props, rootComponent } = this;
+
+            return () => h(rootComponent, props());
+        }
+
+        const setup = baseSetup.bind({
+            props: () => this._props,
+            rootComponent: this.rootComponent,
+        });
 
         // Assuming we have a Vue component to register
         // This is a placeholder for actual Vue component registration logic
-        this.vueApp = createApp(this.rootComponent, props);
+        // this.vueApp = createApp(this.rootComponent, props);
+        this.vueApp = createApp({
+            setup,
+        });
 
         this._logger.debug(`Vue app created for component: ${this.name}`);
 
@@ -124,7 +144,7 @@ export default class AppComponentBridge {
      *
      * @returns {Promise<void>}
      */
-    public async mount(): Promise<void> {
+    public async mount(props?: { [key: string]: string }): Promise<void> {
         await this.hooks.emit('mounting', this, this.vueApp);
 
         // Logic to mount the app component
@@ -138,6 +158,12 @@ export default class AppComponentBridge {
         if (!this.vueApp) {
             this._logger.error(`Vue app not created for component: ${this.name}`);
             return;
+        }
+
+        // if props are provided we merge them with the existing props
+        if (props) {
+            const mergedProps = defu(props, this._props);
+            this._props = mergedProps;
         }
 
         // Mount the Vue app to a specific DOM element

@@ -1,14 +1,33 @@
-const loadComponentFromManifest = async () => {
-    const manifestUrl = __MANIFEST_URL__;
-    const basePath = __BASE_PATH__;
-
-    const appComponentName = '__APP_COMPONENT_NAME__';
+(function manifestLoader(debug = false) {
+    const logger = debug
+        ? {
+              prefix: '__APP_COMPONENT_LOADER_NAME__' ?? 'ManifestLoader',
+              log: function (level, ...args) {
+                  console[level](`[${this.prefix}]`, ...args);
+              },
+              warn: function (...args) {
+                  this.log('warn', ...args);
+              },
+              error: function (...args) {
+                  this.log('error', ...args);
+              },
+              info: function (...args) {
+                  this.log('info', ...args);
+              },
+          }
+        : {
+              warn: () => {},
+              error: (...args) => {
+                  console.error(...args);
+              },
+              info: () => {},
+          };
 
     /**
      * Get the URL of a path, resolving relative paths against the current location.
      *
-     * @param {*} path
-     * @return {*}
+     * @param {string|undefined} path
+     * @return {string}
      */
     function resolveUrl(path) {
         // If path is already absolute URL, return as is
@@ -17,7 +36,7 @@ const loadComponentFromManifest = async () => {
             return path;
         } catch (e) {
             // Handle relative paths
-            if (path.startsWith('/')) {
+            if (path?.startsWith('/')) {
                 return window.location.origin + path;
             } else {
                 return new URL(path, window.location.href).href;
@@ -26,26 +45,12 @@ const loadComponentFromManifest = async () => {
     }
 
     /**
-     * Call a hook with the provided name and arguments.
-     * This function is used to call hooks registered in the window object.
-     * @param {string} hookName - The name of the hook to call.
-     * @param {...*} args - The arguments to pass to the hook.
-     */
-    function callLoaderHook(hookName, ...args) {
-        if (!window['__APP_COMPONENT_LOADER_NAME__']) {
-            return;
-        }
-
-        // Call the hook
-        window['__APP_COMPONENT_LOADER_NAME__']._callHooks(hookName, ...args);
-    }
-
-    /**
      * Get the root element for the app component.
      * To inject scripts and styles into the correct place in the DOM.
      */
     function getComponentRoot() {
-        const component = window[appComponentName];
+        const component = window['__APP_COMPONENT_NAME__'];
+
         if (component && component.element && component.element.root) {
             return component.element.root();
         }
@@ -53,7 +58,15 @@ const loadComponentFromManifest = async () => {
         return document.head; // Fallback to document head if no root found
     }
 
+    /**
+     * Get the base URL for the app component.
+     * This function checks if the base path is defined in the window object,
+     * and resolves it to an absolute URL.
+     * @returns {string} - The base URL for the app component.
+     */
     function getBaseUrl() {
+        const basePath = '__BASE_PATH__';
+
         if (basePath.startsWith('window.') && window[basePath.slice(7)]) {
             const resolvedPath = window[basePath.slice(7)];
 
@@ -69,272 +82,408 @@ const loadComponentFromManifest = async () => {
         return resolveUrl(basePath);
     }
 
-    /** * Load a script dynamically and return a promise that resolves when the script is loaded.
-     * @param {string|object} script - The source URL of the script to load or manifest entry object.
-     * @returns {Promise<string>} - A promise that resolves with the script URL when loaded.
-     */
-    async function loadScript(script) {
-        const baseUrl = getBaseUrl();
-
-        const scriptUrl = typeof script === 'string' ? script : script.file || script.src;
-        const src = resolveUrl(scriptUrl.startsWith('/') ? scriptUrl : `${baseUrl}/${scriptUrl}`);
-
-        return new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.async = true;
-            s.onload = () => {
-                // Call the entryLoading hook for scripts
-                callLoaderHook('entryLoaded', 'script', script);
-
-                // Resolve with the script URL
-                resolve(src);
-            };
-            s.onerror = reject;
-            document.head.appendChild(s);
-        });
-    }
-
-    /** * Load a stylesheet dynamically and return a promise that resolves when the stylesheet is loaded.
-     * @param {string|object} stylesheet - The source URL of the script to load or manifest entry object.
-     * @returns {Promise<string>} - A promise that resolves with the stylesheet URL when loaded.
-     */
-    async function loadStylesheet(stylesheet) {
-        const baseUrl = getBaseUrl();
-
-        // Get the root element for the app component
-        const root = getComponentRoot();
-
-        const href = resolveUrl(
-            stylesheet.src.startsWith('/') ? stylesheet.file : `${baseUrl}/${stylesheet.file}`
-        );
-
-        return new Promise((resolve, reject) => {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = href;
-            link.onload = () => {
-                // Call the entryLoaded hook for stylesheets
-                callLoaderHook('entryLoaded', 'style', stylesheet);
-
-                // Resolve with the stylesheet URL
-                resolve(href);
-            };
-            link.onerror = reject;
-            root.appendChild(link);
-        });
-    }
-
     /**
-     * Fetch the manifest from the specified URL and return its content.
-     * @returns {Promise<any>} - A promise that resolves with the manifest content.
-     */
-    async function fetchManifest() {
-        const baseUrl = getBaseUrl();
-        const manifestFullUrl = resolveUrl(
-            manifestUrl.startsWith('/') ? manifestUrl : `${baseUrl}/${manifestUrl}`
-        );
-
-        try {
-            // Fetch the manifest from the specified URL
-            const response = await fetch(manifestFullUrl, {
-                headers: {
-                    Accept: 'application/json',
-                },
-                credentials: 'omit',
-                method: 'GET',
-                cache: 'no-cache',
-            });
-
-            if (!response.ok) {
-                throw new Error(
-                    `Failed to fetch manifest: ${response.status} ${response.statusText}`
-                );
-            }
-
-            // Check if the response is JSON
-            const contentType = response.headers.get('Content-Type') || '';
-            if (contentType.indexOf('application/json') === -1) {
-                throw new Error(`Expected JSON manifest, but got: ${contentType}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    /**
-     * Load scripts from the manifest entries.
+     * Create a random ID with an optional prefix and random part length.
      *
-     * @param {*} manifest - The manifest entries to load.
-     * @returns {Promise<void>}
-     */
-    async function loadScripts(manifest) {
-        const entries = Object.values(manifest).filter((entry) => entry.isEntry);
-        if (entries.length === 0) throw new Error('No entry points found in manifest');
-
-        for (const entry of entries) {
-            // Load JavaScript chunks
-            const chunks = entry.imports || [];
-            for (const chunk of chunks) {
-                // const chunkUrl = resolveUrl(chunk.startsWith('/') ? chunk : `${baseUrl}/${chunk}`);
-                await loadScript(chunk);
-            }
-
-            // Load main entry script
-            await loadScript(entry);
-        }
-    }
-
-    /**
-     * Load stylesheets from the manifest entries.
-     *
-     * @param {*} manifest
+     * @param {*} prefix
+     * @param {number} [randomPartLength=6]
      * @return {*}
      */
-    async function loadStylesheetsFromManifest(manifest) {
-        // Load additional stylesheets if specified
-        const stylesheets = Object.values(manifest).reduce((acc, entry) => {
-            // If entry is a css file, add it to the stylesheets array
-            if (entry.file.endsWith('.css')) {
-                acc.push(entry);
-                return acc;
-            }
+    function createRandomId(prefix, randomPartLength = 6) {
+        const randomPart = Math.random()
+            .toString(36)
+            .substring(2, 2 + randomPartLength);
 
-            // Chunks and scripts may also have associated CSS files
-            const cssFiles = entry.css || [];
-            if (Array.isArray(cssFiles) && cssFiles.length > 0) {
-                // If entry has CSS files, add them to the stylesheets array
-                cssFiles.forEach((cssFile) => {
-                    acc.push({
-                        src: cssFile,
-                        file: cssFile,
-                    });
-                });
-            }
-
-            return acc;
-        }, []);
-
-        // If no stylesheets are found, return early
-        if (stylesheets.length === 0) {
-            return;
-        }
-
-        // Load stylesheets
-        for (const stylesheet of stylesheets) {
-            await loadStylesheet(stylesheet);
-        }
+        return [prefix || 'id', randomPart].join('-');
     }
 
-    /**
-     * Load the manifest and its entries, then load scripts and stylesheets.
-     * This function is called when the window is ready.
-     */
-    async function loadFromManifest() {
-        const manifest = await fetchManifest();
+    // Helper object to manage the manifest loading state and callbacks
+    const loader = {
+        hooks: {},
+        isLoaded: false,
+        manifest: undefined,
+        scripts: [],
+        stylesheets: [],
+        _registerHook: function (hookName, callback) {
+            if (typeof callback !== 'function') {
+                throw new Error('Hook callback must be a function');
+            }
 
-        try {
-            // Load scripts from manifest
-            await loadScripts(manifest);
-        } catch (error) {
-            // Fail silently if scripts cannot be loaded
-        }
+            if (!this.hooks[hookName]) {
+                this.hooks[hookName] = [];
+            }
 
-        try {
-            // Load stylesheets from manifest
-            await loadStylesheetsFromManifest(manifest);
-        } catch (_error) {
-            // fail silently if stylesheets cannot be loaded
-        }
-    }
+            this.hooks[hookName].push(callback);
+        },
+        /**
+         * Call a hook with the provided name and arguments.
+         */
+        _callHooks: function (hookName, ...args) {
+            if (this.hooks[hookName]) {
+                this.hooks[hookName].forEach((callback) => callback(...args));
+            }
+        },
+        /**
+         * Unload the component and clear the state.
+         */
+        removeHooks: function () {
+            // Clear all hooks
+            this.hooks = {};
+        },
+        /**
+         * Unload the component and clear the state.
+         */
+        unload: function () {
+            this._callHooks('unload');
 
-    loadFromManifest()
-        .then(() => {
-            // Call the loaded method on the app component loader
-            window['AppLearningCourseOverviewLoader'].loaded();
+            // Clear state
+            this.removeHooks();
+            this.isLoaded = false;
+        },
+        /**
+         * Call the 'load' hook when the manifest loading is completed.
+         */
+        loaded: function () {
+            // Call the 'load' hook
+            this._callHooks('load');
 
-            // Optionally, you can dispatch a custom event after loading
-            const event = new CustomEvent('manifest-loaded', {
-                detail: { manifestUrl, basePath, appComponentName },
+            this.isLoaded = true;
+        },
+        /**
+         * Register a callback to be called when the manifest loading is completed.
+         *
+         * @param {Function} callback - The callback function to call when the manifest is loaded.
+         * @throws {Error}
+         */
+        onLoad: function (callback) {
+            this._registerHook('load', callback);
+        },
+        /**
+         * Register a callback to be called when an entry is loaded
+         *
+         * @param {Function} callback - The callback function to call when the manifest is loaded.
+         * @throws {Error}
+         */
+        onEntryLoading: function (callback) {
+            this._registerHook('entryLoading', callback);
+        },
+        /**
+         * Register a callback to be called when an entry of the manifest is loaded.
+         *
+         * @param {Function} callback - The callback function to call when a part is loaded.
+         * @throws {Error}
+         */
+        onEntryLoaded: function (callback) {
+            this._registerHook('entryLoaded', callback);
+        },
+        /**
+         * Check if the asset is already loaded.
+         *
+         * @param {object} asset
+         * @returns {boolean} - true if the asset is loaded, false otherwise.
+         */
+        isAssetLoaded: function (asset) {
+            if (!asset.id) {
+                return false;
+            }
+
+            // Check if we can find the element by ID
+            const element = document.getElementById(asset.id);
+            return element !== null;
+        },
+        /**
+         * Load a script from the passed url
+         *
+         * @param {string} scriptUrl
+         * @returns
+         */
+        loadScript: function (script) {
+            if (this.isAssetLoaded(script)) {
+                logger.info(`Script already loaded: ${script.file || script.src}`);
+                return;
+            }
+
+            const baseUrl = getBaseUrl();
+
+            const scriptUrl = typeof script === 'string' ? script : script.file || script.src;
+            const src = resolveUrl(
+                scriptUrl.startsWith('/') ? scriptUrl : `${baseUrl}/${scriptUrl}`
+            );
+
+            // Create a random ID for the script element
+            const scriptId = createRandomId('script');
+            script.id = scriptId;
+
+            return new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.id = scriptId;
+                s.src = src;
+                s.async = true;
+                s.onload = () => {
+                    // Call the entryLoading hook for scripts
+                    this._callHooks('entryLoaded', 'script', script);
+
+                    // Resolve with the script URL
+                    resolve(scriptUrl);
+
+                    logger.info(`Script loaded: ${scriptUrl}`);
+                };
+                s.onerror = reject;
+                document.head.appendChild(s);
             });
-            document.dispatchEvent(event);
-        })
-        .catch((err) => {
-            // Silent error handling
-            console.error(`Error loading manifest from ${manifestUrl}:`, err);
-        });
-};
+        },
+        /**
+         * Load a stylesheet for given linkHref
+         *
+         * @param {*} stylesheet
+         * @returns
+         */
+        loadStylesheet: function (stylesheet) {
+            if (this.isAssetLoaded(stylesheet)) {
+                logger.info(`Stylesheet already loaded: ${stylesheet.file || stylesheet.src}`);
+                return;
+            }
 
-/**
- * Helper function to load the component when the window is ready.
- *
- * @param {*} callback
- */
-function winLoad(callback) {
-    if (document.readyState === 'complete') {
-        callback();
-    } else {
-        document.addEventListener('load', callback);
+            // Get the root element for the app component
+            const root = getComponentRoot();
+
+            if (!root) {
+                logger.warn('No component root found, cannot load stylesheet');
+
+                return;
+            }
+
+            const baseUrl = getBaseUrl();
+            const styleUrl =
+                typeof stylesheet === 'string' ? stylesheet : stylesheet.file || stylesheet.src;
+            const linkHref = resolveUrl(
+                styleUrl.startsWith('/') ? styleUrl : `${baseUrl}/${styleUrl}`
+            );
+
+            // Generate a random ID for the link element
+            const linkId = createRandomId('style');
+            stylesheet.id = linkId;
+
+            return new Promise((resolve, reject) => {
+                const link = document.createElement('link');
+                link.id = linkId;
+                link.rel = 'stylesheet';
+                link.href = linkHref;
+                link.onload = () => {
+                    // Call the entryLoaded hook for stylesheets
+                    this._callHooks('entryLoaded', 'style', stylesheet);
+
+                    // Resolve with the stylesheet URL
+                    resolve(linkHref);
+
+                    logger.info(`Stylesheet loaded: ${linkHref}`);
+                };
+                link.onerror = reject;
+                root.appendChild(link);
+            });
+        },
+        /**
+         * Split the manifest in entries and stylesheets
+         *
+         * @param {*} manifest
+         */
+        parseManifest: function (manifest) {
+            const assets = Object.values(manifest);
+            if (assets.length === 0) throw new Error('No entry points found in manifest');
+
+            //
+            for (const asset of assets) {
+                // If entry is a css file, add it to the stylesheets array
+                if (asset.file.endsWith('.css')) {
+                    this.stylesheets.push(asset);
+                    continue;
+                }
+
+                // Chunks and scripts may also have associated CSS files
+                const cssFiles = asset.css || [];
+                if (Array.isArray(cssFiles) && cssFiles.length > 0) {
+                    // If entry has CSS files, add them to the stylesheets array
+                    cssFiles.forEach((cssFile) => {
+                        this.stylesheets.push({
+                            src: cssFile,
+                            file: cssFile,
+                        });
+                    });
+                }
+
+                // check if asset isEntry
+                if (asset.isEntry) {
+                    this.scripts.push(asset);
+                }
+            }
+        },
+        /**
+         * Load the manifest
+         */
+        loadManifest: async function (manifestUrl) {
+            if (!manifestUrl) {
+                throw new Error('Manifest URL is required to load the manifest');
+            }
+            if (this.isLoaded) {
+                logger.warn('Manifest is already loaded, no need to load again.');
+                return;
+            }
+
+            const baseUrl = getBaseUrl();
+            const manifestFullUrl = resolveUrl(
+                manifestUrl.startsWith('/') ? manifestUrl : `${baseUrl}/${manifestUrl}`
+            );
+
+            try {
+                // Fetch the manifest from the specified URL
+                const response = await fetch(manifestFullUrl, {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                    credentials: 'omit',
+                    method: 'GET',
+                    cache: 'no-cache',
+                });
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to fetch manifest: ${response.status} ${response.statusText}`
+                    );
+                }
+
+                // Check if the response is JSON
+                const contentType = response.headers.get('Content-Type') || '';
+                if (contentType.indexOf('application/json') === -1) {
+                    throw new Error(`Expected JSON manifest, but got: ${contentType}`);
+                }
+
+                const manifest = await response.json();
+
+                // Add manifest content to this object
+                this.manifest = manifest;
+
+                logger.info(`Manifest loaded from ${manifestFullUrl}`);
+
+                // parse content
+                this.parseManifest(manifest);
+
+                return manifest;
+            } catch (error) {
+                throw error;
+            }
+        },
+        reload: async function () {
+            if (!this.manifest) {
+                throw new Error('Manifest is not loaded, cannot refresh');
+            }
+
+            // Load all scripts and stylesheets again
+            for (const entry of this.scripts) {
+                // Load JavaScript chunks
+                const chunks = entry.imports || [];
+                for (const chunk of chunks) {
+                    await this.loadScript(chunk);
+                }
+
+                // Load main entry script
+                await this.loadScript(entry);
+            }
+
+            for (const stylesheet of this.stylesheets) {
+                await this.loadStylesheet(stylesheet);
+            }
+
+            logger.info('All scripts and stylesheets reloaded successfully');
+        },
+        load: async function () {
+            if (this.isLoaded) {
+                logger.warn('Manifest is already loaded, no need to load again.');
+                // Already loaded, no need to load again
+                return;
+            }
+
+            if (!this.manifest || !this.scripts.length) {
+                throw new Error('Manifest is not loaded, cannot proceed with loading');
+            }
+
+            // Load all scripts
+            try {
+                for (const entry of this.scripts) {
+                    // Load JavaScript chunks
+                    const chunks = entry.imports || [];
+                    for (const chunk of chunks) {
+                        await this.loadScript(chunk);
+                    }
+
+                    // Load main entry script
+                    await this.loadScript(entry);
+                }
+            } catch (error) {}
+
+            // Load stylesheets
+            try {
+                for (const stylesheet of this.stylesheets) {
+                    await this.loadStylesheet(stylesheet);
+                }
+            } catch (error) {}
+
+            logger.info('All scripts and stylesheets loaded successfully');
+
+            this.loaded();
+        },
+    };
+
+    const loadComponentFromManifest = async () => {
+        const manifestUrl = '__MANIFEST_URL__';
+        const basePath = '__BASE_PATH__';
+
+        const appComponentName = '__APP_COMPONENT_NAME__';
+
+        // Loader instance
+        const appLoader = window['__APP_COMPONENT_LOADER_NAME__'];
+
+        /**
+         * Load the manifest and its entries, then load scripts and stylesheets.
+         * This function is called when the window is ready.
+         */
+        async function loadFromManifest() {
+            // Call the loadManifest method on the loader
+            await appLoader.loadManifest(manifestUrl);
+
+            await appLoader.load();
+        }
+
+        loadFromManifest()
+            .then(() => {
+                // Optionally, you can dispatch a custom event after loading
+                const event = new CustomEvent('manifest-loaded', {
+                    detail: { manifestUrl, basePath, appComponentName },
+                });
+                document.dispatchEvent(event);
+            })
+            .catch((err) => {
+                // Silent error handling
+                logger.error(`Error loading manifest from ${manifestUrl}:`, err);
+            });
+    };
+
+    // Expose a helper object to manage the loading state and callbacks
+    window['__APP_COMPONENT_LOADER_NAME__'] = loader;
+
+    /**
+     * Helper function to load the component when the window is ready.
+     *
+     * @param {*} callback
+     */
+    function winLoad(callback) {
+        if (document.readyState === 'complete') {
+            callback();
+        } else {
+            document.addEventListener('load', callback);
+        }
     }
-}
 
-winLoad(async function () {
-    await loadComponentFromManifest();
-});
-
-// Expose a helper object to manage the loading state and callbacks
-window['__APP_COMPONENT_LOADER_NAME__'] = {
-    hooks: {},
-    isLoaded: false,
-    _registerHook: function (hookName, callback) {
-        if (typeof callback !== 'function') {
-            throw new Error('Hook callback must be a function');
-        }
-
-        if (!this.hooks[hookName]) {
-            this.hooks[hookName] = [];
-        }
-
-        this.hooks[hookName].push(callback);
-    },
-    /**
-     * Call a hook with the provided name and arguments.
-     */
-    _callHooks: function (hookName, ...args) {
-        if (this.hooks[hookName]) {
-            this.hooks[hookName].forEach((callback) => callback(...args));
-        }
-    },
-    /**
-     * Call the 'load' hook when the manifest loading is completed.
-     */
-    loaded: async function () {
-        // Call the 'load' hook
-        this._callHooks('load');
-
-        this.isLoaded = true;
-    },
-    /**
-     * Register a callback to be called when the manifest loading is completed.
-     *
-     * @param {Function} callback - The callback function to call when the manifest is loaded.
-     * @throws {Error}
-     */
-    onLoad: function (callback) {
-        this._registerHook('load', callback);
-    },
-    onEntryLoading: function (callback) {
-        this._registerHook('entryLoading', callback);
-    },
-    /**
-     * Register a callback to be called when an entry of the manifest is loaded.
-     *
-     * @param {Function} callback - The callback function to call when a part is loaded.
-     * @throws {Error}
-     */
-    onEntryLoaded: function (callback) {
-        this._registerHook('entryLoaded', callback);
-    },
-};
+    winLoad(async function () {
+        await loadComponentFromManifest();
+    });
+})('__DEBUG_MANIFEST_LOADER__' === 'true');
