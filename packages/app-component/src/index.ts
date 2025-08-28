@@ -121,7 +121,13 @@ class AppComponent {
         if (options.hooks) {
             // Add hooks from options
             for (const [hookName, callback] of Object.entries(options.hooks)) {
-                hooks.on(hookName, callback);
+                if (typeof callback === 'function') {
+                    hooks.on(hookName, callback);
+                    continue;
+                }
+
+                const once = callback.once || false;
+                hooks.on(hookName, callback.callback, once);
             }
         }
 

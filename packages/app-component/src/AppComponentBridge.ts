@@ -241,9 +241,7 @@ export default class AppComponentBridge {
 
     private removeExternalHooks(): void {
         // Remove all external hooks
-        for (const hookName in this._externalHooks) {
-            this.hooks.removeHook(hookName, this._externalHooks[hookName]);
-        }
+        this.hooks.removeHooks(this._externalHooks);
         this._externalHooks = {};
     }
 
