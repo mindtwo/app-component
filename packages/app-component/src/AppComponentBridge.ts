@@ -1,8 +1,9 @@
 import { App, Component, createApp, h } from 'vue';
 import { type Logger, createLogger } from './lib/logger';
 import AppComponentHtmlElement from './AppComponentHtmlElement';
-import { ComponentHooks } from './lib/hooks';
+import { ComponentHooks, isValidComponentHook } from './lib/hooks';
 import defu from 'defu';
+import { HookCallback } from 'hookable';
 
 export type WindowWithAppComponentBridge = Window &
     typeof globalThis & {
@@ -41,6 +42,8 @@ export default class AppComponentBridge {
 
     // Properties and attributes
     private _props: { [key: string]: string } = {};
+
+    private _externalHooks: { [key: string]: HookCallback } = {};
 
     constructor(name: string, component: Component, hooks: ComponentHooks, styles?: string) {
         this._logger = createLogger();
@@ -186,8 +189,6 @@ export default class AppComponentBridge {
         this._logger.debug(`Destroying app component: ${this.name}`);
         // const w = window as WindowWithAppComponentBridge;
 
-        this.hooks.clear();
-
         // remove the Vue app instance
         if (this.vueApp) {
             this.vueApp.unmount();
@@ -205,6 +206,7 @@ export default class AppComponentBridge {
         // }
 
         await this.hooks.emit('unmounted', this);
+        this.removeExternalHooks();
     }
 
     public recreate() {
@@ -237,6 +239,14 @@ export default class AppComponentBridge {
 
     // HOOKS
 
+    private removeExternalHooks(): void {
+        // Remove all external hooks
+        for (const hookName in this._externalHooks) {
+            this.hooks.removeHook(hookName, this._externalHooks[hookName]);
+        }
+        this._externalHooks = {};
+    }
+
     /**
      * Register a hook callback for a specific hook name.
      *
@@ -249,6 +259,11 @@ export default class AppComponentBridge {
      */
     public on(hookName: string, callback: (data?: any) => void, once: boolean = false): void {
         this.hooks.on(hookName, callback, once);
+
+        if (!once && !isValidComponentHook(hookName)) {
+            // Store the external hook for later use
+            this._externalHooks[hookName] = callback;
+        }
     }
 
     /**

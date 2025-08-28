@@ -19,7 +19,7 @@ export type ComponentHookName =
 // | 'navigate'
 // | 'loaded'
 
-function isValidComponentHook(hookName: string): hookName is ComponentHookName {
+export function isValidComponentHook(hookName: string): hookName is ComponentHookName {
     return [
         'mounting',
         'creating',
@@ -100,15 +100,6 @@ export class ComponentHooks extends Hookable {
         hookName = this.formatHookName(hookName);
 
         this.removeHook(hookName, callback);
-    }
-
-    /**
-     * Remove all hooks for a specific hook name.
-     *
-     * @return {void}
-     */
-    public clear(): void {
-        this.removeAllHooks();
     }
 
     /**
