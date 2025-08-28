@@ -30,6 +30,10 @@ export const AppComponentPlugin: UnpluginInstance<PluginOptions | undefined, fal
             transform: defineAppComponentTrasform,
 
             async buildStart() {
+                if (!options.manifestLoader) {
+                    return;
+                }
+
                 const templatePath = path.resolve(__dirname, 'manifest-loader.template');
                 templateContent = await readFile(templatePath, 'utf-8');
 
@@ -38,6 +42,10 @@ export const AppComponentPlugin: UnpluginInstance<PluginOptions | undefined, fal
             },
 
             generateBundle(_bundleOptions: any, _bundle: any) {
+                if (!options.manifestLoader) {
+                    return;
+                }
+
                 createManifestLoader(this, options, templateContent ?? '');
             },
         };
