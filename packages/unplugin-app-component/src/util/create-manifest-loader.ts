@@ -36,14 +36,16 @@ const getManifestLoaderContent = (
     manifestUrl: string,
     templateContent: string,
     name: string = 'AppComponent',
-    basePath: string = '/'
+    basePath: string = '/',
+    debug: boolean = false
 ): string => {
     // Ensure the name is in PascalCase for consistency
     name = pascalCase(name);
 
     return templateContent
-        .replaceAll('__MANIFEST_URL__', `"${manifestUrl}"`)
-        .replaceAll('__BASE_PATH__', `"${basePath}"`)
+        .replace('__DEBUG_MANIFEST_LOADER__', debug ? 'true' : 'false')
+        .replaceAll('__MANIFEST_URL__', manifestUrl)
+        .replaceAll('__BASE_PATH__', basePath)
         .replaceAll('__APP_COMPONENT_NAME__', name)
         .replaceAll('__APP_COMPONENT_LOADER_NAME__', `${name}Loader`)
         .trim();
@@ -80,7 +82,8 @@ export const createManifestLoader = (
             manifestUrl,
             templateContent,
             options.name,
-            options.basePath
+            options.basePath,
+            options.debug || false
         ),
     });
 };
