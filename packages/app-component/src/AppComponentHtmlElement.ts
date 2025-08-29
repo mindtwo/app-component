@@ -103,6 +103,13 @@ export default class AppComponentHtmlElement extends HTMLElement {
         return (!!this.shadow || !!this.wrapper) && this.innerHTML !== '';
     }
 
+    public clearProps(): void {
+        // Clear the props object
+        this._props = {};
+        this._attrs = {};
+        this.autoMount = false;
+    }
+
     public unmount(): void {
         this._logger.debug(`Unmounting app component: ${this.name}`);
 

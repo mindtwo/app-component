@@ -2,6 +2,8 @@ import kebabCase from 'just-kebab-case';
 import { Component } from 'vue';
 import { PartialButKeep } from './util';
 
+type HookFn = (...args: unknown[]) => void | Promise<void>;
+
 export interface AppComponentOptions {
     /**
      * Name of the app component
@@ -54,7 +56,7 @@ export interface AppComponentOptions {
      * Optional hooks for the component
      */
     hooks?: {
-        [key: string]: (...args: unknown[]) => void;
+        [key: string]: { once?: boolean; callback: HookFn } | HookFn;
     };
 }
 

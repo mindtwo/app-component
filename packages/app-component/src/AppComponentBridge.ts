@@ -186,7 +186,7 @@ export default class AppComponentBridge {
         this._logger.debug(`Destroying app component: ${this.name}`);
         // const w = window as WindowWithAppComponentBridge;
 
-        this.hooks.clear();
+        this._props = {};
 
         // remove the Vue app instance
         if (this.vueApp) {
@@ -196,6 +196,7 @@ export default class AppComponentBridge {
 
         // Remove the inner dom of the element
         if (this.element) {
+            this.element.clearProps();
             this.element.unmount();
         }
 
@@ -205,6 +206,7 @@ export default class AppComponentBridge {
         // }
 
         await this.hooks.emit('unmounted', this);
+        this.removeExternalHooks();
     }
 
     public recreate() {
@@ -236,6 +238,11 @@ export default class AppComponentBridge {
     }
 
     // HOOKS
+
+    private removeExternalHooks(): void {
+        // Remove all external hooks
+        this.hooks.removeExternalHooks();
+    }
 
     /**
      * Register a hook callback for a specific hook name.

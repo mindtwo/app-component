@@ -49,6 +49,8 @@ export class ComponentHooks extends Hookable {
 
     private hookableName?: string;
 
+    private _externalHooks: { [key: string]: HookCallback } = {};
+
     constructor(hookableName?: string, debug: boolean = false) {
         super();
 
@@ -75,14 +77,18 @@ export class ComponentHooks extends Hookable {
             this._logger.warn(`Invalid hook name: ${hookName}. The callback may not be called.`);
         }
 
-        hookName = this.formatHookName(hookName);
+        const formattedHookName = this.formatHookName(hookName);
 
         if (once) {
-            this.hookOnce(hookName, callback);
+            this.hookOnce(formattedHookName, callback);
             return;
         }
 
-        this.hook(hookName, callback);
+        this.hook(formattedHookName, callback);
+
+        if (!isValidComponentHook(hookName)) {
+            this._externalHooks[hookName] = callback;
+        }
     }
 
     /**
@@ -100,15 +106,6 @@ export class ComponentHooks extends Hookable {
         hookName = this.formatHookName(hookName);
 
         this.removeHook(hookName, callback);
-    }
-
-    /**
-     * Remove all hooks for a specific hook name.
-     *
-     * @return {void}
-     */
-    public clear(): void {
-        this.removeAllHooks();
     }
 
     /**
@@ -142,6 +139,11 @@ export class ComponentHooks extends Hookable {
         ...args: unknown[]
     ): Promise<unknown> {
         return await this.emit(hookName, ...args);
+    }
+
+    public removeExternalHooks(): void {
+        this.removeHooks(this._externalHooks);
+        this._externalHooks = {};
     }
 
     private formatHookName(hookName: ComponentHookName | string): string {
