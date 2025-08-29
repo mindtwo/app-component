@@ -19,7 +19,7 @@ export type ComponentHookName =
 // | 'navigate'
 // | 'loaded'
 
-export function isValidComponentHook(hookName: string): hookName is ComponentHookName {
+function isValidComponentHook(hookName: string): hookName is ComponentHookName {
     return [
         'mounting',
         'creating',
@@ -48,6 +48,8 @@ export class ComponentHooks extends Hookable {
     private _logger: Logger;
 
     private hookableName?: string;
+
+    private _externalHooks: { [key: string]: HookCallback } = {};
 
     constructor(hookableName?: string, debug: boolean = false) {
         super();
@@ -83,6 +85,10 @@ export class ComponentHooks extends Hookable {
         }
 
         this.hook(hookName, callback);
+
+        if (!isValidComponentHook(hookName)) {
+            this._externalHooks[hookName] = callback;
+        }
     }
 
     /**
@@ -133,6 +139,11 @@ export class ComponentHooks extends Hookable {
         ...args: unknown[]
     ): Promise<unknown> {
         return await this.emit(hookName, ...args);
+    }
+
+    public removeExternalHooks(): void {
+        this.removeHooks(this._externalHooks);
+        this._externalHooks = {};
     }
 
     private formatHookName(hookName: ComponentHookName | string): string {

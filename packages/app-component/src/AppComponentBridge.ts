@@ -1,9 +1,8 @@
 import { App, Component, createApp, h } from 'vue';
 import { type Logger, createLogger } from './lib/logger';
 import AppComponentHtmlElement from './AppComponentHtmlElement';
-import { ComponentHooks, isValidComponentHook } from './lib/hooks';
+import { ComponentHooks } from './lib/hooks';
 import defu from 'defu';
-import { HookCallback } from 'hookable';
 
 export type WindowWithAppComponentBridge = Window &
     typeof globalThis & {
@@ -42,8 +41,6 @@ export default class AppComponentBridge {
 
     // Properties and attributes
     private _props: { [key: string]: string } = {};
-
-    private _externalHooks: { [key: string]: HookCallback } = {};
 
     constructor(name: string, component: Component, hooks: ComponentHooks, styles?: string) {
         this._logger = createLogger();
@@ -189,6 +186,8 @@ export default class AppComponentBridge {
         this._logger.debug(`Destroying app component: ${this.name}`);
         // const w = window as WindowWithAppComponentBridge;
 
+        this._props = {};
+
         // remove the Vue app instance
         if (this.vueApp) {
             this.vueApp.unmount();
@@ -197,6 +196,7 @@ export default class AppComponentBridge {
 
         // Remove the inner dom of the element
         if (this.element) {
+            this.element.clearProps();
             this.element.unmount();
         }
 
@@ -241,8 +241,7 @@ export default class AppComponentBridge {
 
     private removeExternalHooks(): void {
         // Remove all external hooks
-        this.hooks.removeHooks(this._externalHooks);
-        this._externalHooks = {};
+        this.hooks.removeExternalHooks();
     }
 
     /**
@@ -257,11 +256,6 @@ export default class AppComponentBridge {
      */
     public on(hookName: string, callback: (data?: any) => void, once: boolean = false): void {
         this.hooks.on(hookName, callback, once);
-
-        if (!once && !isValidComponentHook(hookName)) {
-            // Store the external hook for later use
-            this._externalHooks[hookName] = callback;
-        }
     }
 
     /**
