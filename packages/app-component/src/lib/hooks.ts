@@ -77,14 +77,14 @@ export class ComponentHooks extends Hookable {
             this._logger.warn(`Invalid hook name: ${hookName}. The callback may not be called.`);
         }
 
-        hookName = this.formatHookName(hookName);
+        const formattedHookName = this.formatHookName(hookName);
 
         if (once) {
-            this.hookOnce(hookName, callback);
+            this.hookOnce(formattedHookName, callback);
             return;
         }
 
-        this.hook(hookName, callback);
+        this.hook(formattedHookName, callback);
 
         if (!isValidComponentHook(hookName)) {
             this._externalHooks[hookName] = callback;
