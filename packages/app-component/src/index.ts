@@ -66,10 +66,11 @@ class AppComponent {
      */
     protected bridge(): AppComponentBridge {
         const w = window as WindowWithAppComponentBridge;
-        if (!w[this.name]) {
+        const bridge = w[this.name];
+        if (!bridge || !(bridge instanceof AppComponentBridge)) {
             throw new Error(`App component bridge not found for: ${this.name}`);
         }
-        return w[this.name];
+        return bridge;
     }
 
     // Overload signatures

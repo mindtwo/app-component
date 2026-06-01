@@ -1,108 +1,218 @@
 # @mindtwo/app-component
-Helper for mounting Vue components into the DOM within a Vue app. This utility simplifies mounting Vue components dynamically onto specific DOM elements and facilitates the seamless integration of Vue components into non-SPA (Single Page Application) environments.
+
+Helper for mounting Vue 3 components into the DOM as custom HTML elements. This utility simplifies embedding Vue components dynamically onto specific DOM elements and facilitates the seamless integration of Vue components into non-SPA environments (e.g. legacy CMS, server-rendered pages, multi-page apps).
+
 ## Table of Contents
+
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Examples](#examples)
-- [API](#api)
+- [Options](#options)
+- [Hooks](#hooks)
 - [Attributes](#attributes)
+- [API](#api)
+- [Packages](#packages)
 - [License](#license)
-## Introduction
-The `@mindtwo/app-component` package is a utility that allows you to easily mount Vue components onto specific HTML elements dynamically. This is particularly useful when integrating Vue into existing applications where Vue isn't controlling the entire page. The package handles the lifecycle of Vue components, including mounting, unmounting, and managing their state.
 
-### Problems Solved:
-- Simplifies the process of embedding Vue components into non-SPA applications.
-- Allows dynamic mounting and unmounting of Vue components on demand.
-- Manages Vue component state and event handling across different parts of an application.
+## Introduction
+
+The `@mindtwo/app-component` package is a utility that allows you to easily mount Vue components onto specific HTML elements through native custom elements. This is particularly useful when integrating Vue into existing applications where Vue isn't controlling the entire page. The package handles the lifecycle of Vue components, including mounting, unmounting, hooks and prop forwarding from HTML attributes.
+
+### Problems Solved
+
+- Embedding Vue components into non-SPA applications.
+- Dynamic mounting and unmounting of Vue components on demand.
+- Passing props through HTML attributes.
+- Lifecycle hooks for integration with surrounding code.
+- Optional Shadow DOM isolation per component instance.
 
 ## Installation
-To install the package from the GitHub npm registry, you can use the following command:
+
+Install the package from the GitHub npm registry:
+
 ```bash
 npm install @mindtwo/app-component --registry=https://npm.pkg.github.com/mindtwo
 ```
-Make sure you have configured your `.npmrc` to use the GitHub npm registry:
+
+Configure your `.npmrc` to use the GitHub npm registry for the `@mindtwo` scope:
+
 ```bash
 # .npmrc
 @mindtwo:registry=https://npm.pkg.github.com/
 ```
 
+### Peer dependencies
+
+- `vue` `^3.5.17`
+
 ## Usage
-First, ensure you import the necessary functions and classes from the `@mindtwo/app-component` package in your JavaScript or TypeScript files.
+
+Register the component once on application startup. `AppComponent.create()` defines a custom HTML element that mounts the Vue component for every matching tag found on the page.
+
 ```ts
-import { AppComponentElement, AppComponent } from '@mindtwo/app-component';
+import { AppComponent } from '@mindtwo/app-component';
 import MyComponent from './components/MyComponent.vue';
-// Create a new custom element and mount it to the DOM
-customElements.define('my-app-component', new AppComponentElement('my-app-component', MyComponent));
+
+AppComponent.create({
+    name: 'my-app-component',
+    component: MyComponent,
+});
 ```
-In your HTML file, you can then use the custom element as follows:
+
+In your HTML:
+
 ```html
-<my-app-component auto-mount></my-app-component>
+<my-app-component greeting="Hello"></my-app-component>
 ```
-This will automatically mount the `MyComponent` Vue component into the DOM.
-### Dynamic Mounting Example
-You can programmatically control when components are mounted and unmounted:
+
+The component is auto-mounted whenever it is connected to the DOM.
+
+### Short syntax
+
+If you don't need any options you can use the shorthand:
+
 ```ts
-const appComponent = AppComponent.create('my-app-component', MyComponent);
-// Pass props dynamically and mount the component
-appComponent.setProps({ someProp: 'value' });
-appComponent.mount();
-// Later, you can unmount the component
-appComponent.unmount();
+AppComponent.create('my-app-component', MyComponent);
 ```
 
-## Examples
+### Passing props
 
-### Basic Example
+All HTML attributes (except a few reserved names — see [Attributes](#attributes)) are forwarded as props to the Vue component. Attribute names are converted to kebab-case:
+
 ```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vue App Component Example</title>
-  </head>
-  <body>
-    <my-app-component></my-app-component>
-    <script type="module">
-      import { AppComponentElement } from '@mindtwo/app-component';
-      import MyComponent from './MyComponent.vue';
-      customElements.define('my-app-component', new AppComponentElement('my-app-component', MyComponent));
-    </script>
-  </body>
-</html>
+<my-app-component some-prop="Hello, World!" user-id="42"></my-app-component>
 ```
 
-### Component with Props
-```html
-<my-app-component some-prop="Hello, World!"></my-app-component>
+```vue
+<script setup>
+defineProps<{
+    someProp: string;
+    userId: string;
+}>();
+</script>
 ```
-Here, `some-prop` will be passed as a prop to the `MyComponent` Vue component.
+
+### Shadow DOM
+
+Enable Shadow DOM isolation per component:
+
+```ts
+AppComponent.create({
+    name: 'my-app-component',
+    component: MyComponent,
+    shadowRoot: true,
+});
+```
+
+### External stylesheet
+
+Provide a stylesheet URL that will be linked into the component root:
+
+```ts
+AppComponent.create({
+    name: 'my-app-component',
+    component: MyComponent,
+    style: '/assets/my-component.css',
+});
+```
+
+## Options
+
+`AppComponent.create()` accepts the following options:
+
+| Option         | Type                                  | Default                  | Description                                                                  |
+| -------------- | ------------------------------------- | ------------------------ | ---------------------------------------------------------------------------- |
+| `name`         | `string`                              | _required_               | Component name. Used for PascalCase global registration.                     |
+| `component`    | `Component`                           | _required_               | The Vue component to mount.                                                  |
+| `elementName`  | `string`                              | kebab-case of `name`     | Custom element tag name.                                                     |
+| `hookableName` | `string \| boolean`                   | `undefined`              | Prefix for emitted hook names. If `true`, uses kebab-case of `name`.         |
+| `shadowRoot`   | `boolean`                             | `false`                  | If true, the component is mounted inside a Shadow DOM.                       |
+| `debug`        | `boolean`                             | `false`                  | Enables verbose logging.                                                     |
+| `globalHooks`  | `boolean`                             | `false`                  | If true, the component uses a shared hooks instance across all components.   |
+| `style`        | `string`                              | `undefined`              | Stylesheet URL to inject into the component root.                            |
+| `hooks`        | `{ [name]: fn \| { callback, once }}` | `undefined`              | Hook callbacks to register at creation time.                                 |
+
+## Hooks
+
+Hooks let you react to the component lifecycle. Register them via the `hooks` option, or via `bridge.on()` from the global bridge object.
+
+Available hook names:
+
+- `init` — fired before the AppComponent is constructed.
+- `ready` — fired after the bridge is created.
+- `initialized` — fired after the HTML element initializes its DOM.
+- `connected` — fired when the element is added to the DOM.
+- `disconnected` — fired when the element is removed from the DOM.
+- `creating` / `created` — around Vue app creation.
+- `mounting` / `mounted` — around Vue app mount.
+- `unmounting` / `unmounted` — around Vue app unmount.
+
+Example:
+
+```ts
+AppComponent.create({
+    name: 'my-app-component',
+    component: MyComponent,
+    hooks: {
+        connected: (el) => {
+            console.log('element connected', el);
+        },
+        mounted: { once: true, callback: (bridge, app) => console.log('mounted', app) },
+    },
+});
+```
+
+You can also use custom hook names. Custom hooks are stored as "external hooks" and cleaned up automatically on `unmount()`.
+
+## Attributes
+
+The generated custom element forwards HTML attributes as props. The following attribute names are reserved and not forwarded:
+
+- `auto-mount` — reserved, but currently auto-mount is the default behavior.
+- Any `data-v-*` Vue scope-id attributes.
+
+All other attributes are converted to kebab-case keys on the Vue `props` object.
 
 ## API
 
-### `AppComponent`
-The `AppComponent` class is responsible for managing the Vue application instance.
-- `AppComponent.create(name: string, component: Component): AppComponent`: Creates a new `AppComponent` instance and registers it on the global `window` object.
-- `mount(props: { [key: string]: any }): void`: Mounts the Vue component to the DOM with optional props.
-- `unmount(): void`: Unmounts the Vue component and clears the DOM wrapper.
-- `registerComponent(name: string, component: Component): this`: Registers additional components to the app.
-- `registerPlugin(plugin: Plugin, options: any[]): this`: Registers Vue plugins with options.
-- `setProps(props: { [key: string]: any }): void`: Sets the props for the component before mounting.
-- `addEventListener(event: EventType, callback: Function): this`: Adds an event listener for component lifecycle events.
+### `AppComponent.create(name, component)` / `AppComponent.create(options)`
 
-### `AppComponentElement`
-The `AppComponentElement` class is a custom element that extends `HTMLElement`. It wraps the Vue component's mounting and unmounting logic and is automatically mounted when added to the DOM.
-- `constructor(name: string, component: Component)`: Initializes the custom element with the given Vue component.
-- `connectedCallback()`: Lifecycle method, called when the element is added to the DOM.
-- `disconnectedCallback()`: Lifecycle method, called when the element is removed from the DOM.
-- `getAttributes()`: Returns the props and attributes for the Vue component.
-- `isAutoMount`: Checks whether the component should automatically mount upon connection.
+Registers a custom element and creates the bridge. Returns `Promise<void>`. Auto-mounts on connect.
 
-## Attributes
-The custom element supports passing attributes as props to the Vue component. Here's a list of supported attributes:
-- `auto-mount`: Automatically mounts the component when added to the DOM.
-- All standard HTML attributes (like `id`, `class`, etc.) are passed as props to the Vue component.
+### Global bridge
+
+For each component, a bridge instance is registered on `window` under the PascalCase name. You can use it to control the component after creation:
+
+```ts
+// e.g. for name "my-app-component", PascalCase: "MyAppComponent"
+const bridge = window.MyAppComponent;
+
+await bridge.mount({ extraProp: 'value' });
+await bridge.unmount();
+bridge.recreate();
+bridge.on('mounted', () => console.log('mounted'));
+bridge.off('mounted', handler);
+bridge.emit('custom-event', payload);
+```
+
+#### Bridge methods
+
+- `create(): Promise<void>` — create the underlying Vue app.
+- `mount(props?): Promise<void>` — mount and optionally merge additional props.
+- `unmount(): Promise<void>` — unmount and clean up external hooks.
+- `recreate(): void` — rebuild DOM and recreate the Vue app.
+- `created(): boolean` — whether the Vue app has been created.
+- `getName(): string` — get the PascalCase name.
+- `on(name, callback, once?)` / `off(name, callback)` — manage hook callbacks.
+- `emit(name, ...args)` / `trigger(name, ...args)` — emit hooks.
+
+## Packages
+
+This monorepo provides two packages:
+
+- [`@mindtwo/app-component`](./packages/app-component) — the runtime helper described above.
+- [`@mindtwo/unplugin-app-component`](./packages/unplugin-app-component) — a bundler plugin (Vite / Rollup / Rolldown) to register app components from source and optionally generate a manifest loader.
 
 ## License
+
 This project is licensed under the MIT License.

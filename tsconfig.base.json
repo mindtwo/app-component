@@ -7,7 +7,7 @@
         "noImplicitAny": true,
         "noImplicitThis": true,
         "noImplicitReturns": true,
-        "moduleResolution": "Node",
+        "moduleResolution": "Bundler",
         "module": "esnext",
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,

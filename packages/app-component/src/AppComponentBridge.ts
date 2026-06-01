@@ -6,7 +6,8 @@ import defu from 'defu';
 
 export type WindowWithAppComponentBridge = Window &
     typeof globalThis & {
-        [key: string]: AppComponentBridge;
+        __appComponentGlobalHooks?: ComponentHooks;
+        [key: string]: AppComponentBridge | ComponentHooks | undefined;
     };
 
 /**
