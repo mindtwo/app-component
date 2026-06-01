@@ -58,5 +58,6 @@
         "vite": { "optional": true },
         "rollup": { "optional": true },
         "rolldown": { "optional": true }
-    }
+    },
+    "version": "0.0.0"
 }

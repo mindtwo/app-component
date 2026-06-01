@@ -132,6 +132,11 @@ export default class AppComponentBridge {
         // Provide hooks to the Vue app
         this.vueApp.provide('hooks', this.hooks);
         this.vueApp.provide('$getRoot', () => this.element?.root());
+        this.vueApp.provide('$appComponent', {
+            name: this.name,
+            bridge: this,
+            element: this.element,
+        });
 
         await this.hooks.emit('created', this, this.vueApp);
 

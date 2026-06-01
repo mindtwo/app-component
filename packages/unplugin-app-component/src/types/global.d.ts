@@ -67,6 +67,19 @@ declare module 'app-component-plugin' {
          * @memberof PluginOptions
          */
         manifestUrl?: string;
+
+        /**
+         * Module specifier of a custom script loader. When set, the manifest
+         * loader will dynamic-import this module and delegate script injection
+         * to its default export (a function matching the `ScriptLoader` type
+         * exported from this package).
+         *
+         * Example: `'@mindtwo/app-component-nuxt-scripts'`.
+         *
+         * @type {string}
+         * @memberof PluginOptions
+         */
+        scriptLoader?: string;
     }
 
     export const defineAppComponent: (options: PluginOptions) => void;

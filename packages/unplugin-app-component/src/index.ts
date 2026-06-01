@@ -13,6 +13,8 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+export type { ScriptLoader } from './types/options';
+
 export const AppComponentPlugin: UnpluginInstance<PluginOptions | undefined, false> =
     createUnplugin((rawOptions = {}) => {
         const options = normalizeOptions(rawOptions);

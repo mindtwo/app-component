@@ -7,8 +7,10 @@
     ],
     "main": "./dist/app-component.umd.cjs",
     "module": "./dist/app-component.js",
+    "types": "./dist/index.d.ts",
     "exports": {
         ".": {
+            "types": "./dist/index.d.ts",
             "import": "./dist/app-component.js",
             "require": "./dist/app-component.umd.cjs"
         }
@@ -35,11 +37,12 @@
         "eslint": "^10.4.1",
         "typescript": "^6.0.3",
         "vite": "^8.0.14",
+        "vite-plugin-dts": "^5.0.1",
         "vitest": "^4.1.7",
         "vue": "^3.5.35"
     },
     "peerDependencies": {
         "vue": "^3.5.17"
     },
-    "version": ""
+    "version": "0.0.0"
 }

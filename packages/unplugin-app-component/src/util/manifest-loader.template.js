@@ -197,7 +197,7 @@
          * @param {string} scriptUrl
          * @returns
          */
-        loadScript: function (script) {
+        loadScript: async function (script) {
             if (this.isAssetLoaded(script)) {
                 logger.info(`Script already loaded: ${script.file || script.src}`);
                 return;
@@ -213,6 +213,29 @@
             // Create a random ID for the script element
             const scriptId = createRandomId('script');
             script.id = scriptId;
+
+            // If a custom script loader was provided at build time, delegate.
+            const scriptLoaderModule = '__SCRIPT_LOADER__';
+            if (scriptLoaderModule) {
+                try {
+                    const mod = await import(/* @vite-ignore */ scriptLoaderModule);
+                    const loaderFn = mod.default || mod.loadScript;
+                    if (typeof loaderFn === 'function') {
+                        await loaderFn({ src, id: scriptId });
+                        this._callHooks('entryLoaded', 'script', script);
+                        logger.info(`Script loaded via custom loader: ${scriptUrl}`);
+                        return scriptUrl;
+                    }
+                    logger.warn(
+                        `Custom script loader "${scriptLoaderModule}" did not export a function; falling back to default loader.`
+                    );
+                } catch (err) {
+                    logger.error(
+                        `Custom script loader "${scriptLoaderModule}" failed; falling back to default loader.`,
+                        err
+                    );
+                }
+            }
 
             return new Promise((resolve, reject) => {
                 const s = document.createElement('script');
