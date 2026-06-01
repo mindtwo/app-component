@@ -30,7 +30,7 @@ if [[ "$BUMP_TYPE" == "git" ]]; then
     echo "Will release packages with tag $TAG"
 else
     # Get next version tag
-    PACKAGE_VERSION=$(npx tsx scripts/calculateVersion.ts "$BUMP_TYPE")
+    PACKAGE_VERSION=$(pnpm exec tsx scripts/calculateVersion.ts "$BUMP_TYPE")
 
     echo "Next version: $PACKAGE_VERSION"
 
@@ -40,7 +40,7 @@ else
     git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
 
     # Check if the version is already set
-    $(npx tsx scripts/bump.ts)
+    $(pnpm exec tsx scripts/bump.ts)
 fi
 
 # git push origin "$TAG_NAME"
