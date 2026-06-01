@@ -1,6 +1,7 @@
 import kebabCase from 'just-kebab-case';
 import { Component } from 'vue';
 import { PartialButKeep } from './util';
+import type { NavigationAdapter } from '../navigation/types';
 
 type HookFn = (...args: unknown[]) => void | Promise<void>;
 
@@ -66,6 +67,14 @@ export interface AppComponentOptions {
     hooks?: {
         [key: string]: { once?: boolean; callback: HookFn } | HookFn;
     };
+
+    /**
+     * Optional navigation adapter. When set, the bridge exposes
+     * `bridge.navigate(url)` for the host and `useNavigation()` for Vue
+     * components. See `createHistoryNavigationAdapter` and
+     * `createEventNavigationAdapter` for the built-in implementations.
+     */
+    navigation?: NavigationAdapter;
 }
 
 export type AppComponentOptionsPartial = PartialButKeep<AppComponentOptions, 'name' | 'component'>;
@@ -97,5 +106,6 @@ export function createAppComponentOptions(
         globalHooks: options.globalHooks || false,
         hooks: options.hooks,
         style: options.style || '',
+        navigation: options.navigation,
     };
 }

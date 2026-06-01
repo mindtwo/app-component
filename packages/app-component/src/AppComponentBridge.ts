@@ -3,6 +3,11 @@ import { type Logger, createLogger } from './lib/logger';
 import AppComponentHtmlElement from './AppComponentHtmlElement';
 import { ComponentHooks } from './lib/hooks';
 import type { StyleSpec } from './types/app-component-options';
+import type {
+    NavigationAction,
+    NavigationAdapter,
+    NavigationAdapterContext,
+} from './navigation/types';
 import defu from 'defu';
 
 export type WindowWithAppComponentBridge = Window &
@@ -32,6 +37,9 @@ export default class AppComponentBridge {
 
     private styles?: StyleSpec | StyleSpec[];
 
+    // Optional navigation adapter (history mode, event mode, or custom)
+    private adapter?: NavigationAdapter;
+
     // Root component of the app
     private rootComponent: Component;
 
@@ -48,7 +56,8 @@ export default class AppComponentBridge {
         name: string,
         component: Component,
         hooks: ComponentHooks,
-        styles?: StyleSpec | StyleSpec[]
+        styles?: StyleSpec | StyleSpec[],
+        navigation?: NavigationAdapter
     ) {
         this._logger = createLogger();
 
@@ -57,6 +66,27 @@ export default class AppComponentBridge {
         this.rootComponent = component;
         this.hooks = hooks;
         this.styles = styles;
+        this.adapter = navigation;
+    }
+
+    private buildNavigationContext(): NavigationAdapterContext {
+        return {
+            emit: (event) => this.hooks.emit('navigate', event),
+        };
+    }
+
+    /**
+     * Host-facing navigation entry point. When a navigation adapter is
+     * registered, the bridge forwards the call to the adapter's `setUrl`.
+     */
+    public navigate(url: string, action: NavigationAction = 'sync'): void {
+        if (!this.adapter) {
+            this._logger.warn(
+                `navigate() called on "${this.name}" but no navigation adapter was registered.`
+            );
+            return;
+        }
+        this.adapter.setUrl(url, action);
     }
 
     public setElement(element: AppComponentHtmlElement): void {
@@ -138,6 +168,12 @@ export default class AppComponentBridge {
             element: this.element,
         });
 
+        // Wire up the navigation adapter (if any) and expose it via inject
+        if (this.adapter) {
+            this.adapter.install(this.buildNavigationContext());
+        }
+        this.vueApp.provide('$navigation', this.adapter ?? null);
+
         await this.hooks.emit('created', this, this.vueApp);
 
         // Add stylesheet(s) to root if provided
@@ -217,6 +253,9 @@ export default class AppComponentBridge {
         // if (w[this.name]) {
         //     delete w[this.name];
         // }
+
+        // Tear down the navigation adapter, if any
+        this.adapter?.dispose();
 
         await this.hooks.emit('unmounted', this);
         this.removeExternalHooks();

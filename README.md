@@ -11,6 +11,7 @@ Helper for mounting Vue 3 components into the DOM as custom HTML elements. This 
 - [Hooks](#hooks)
 - [Attributes](#attributes)
 - [Composables](#composables)
+- [Navigation](#navigation)
 - [Manifest loader](#manifest-loader)
 - [API](#api)
 - [Packages](#packages)
@@ -143,6 +144,7 @@ AppComponent.create({
 | `globalHooks`  | `boolean`                             | `false`                  | If true, the component uses a shared hooks instance across all components.   |
 | `style`        | `StyleSpec \| StyleSpec[]`            | `undefined`              | Stylesheet(s) to inject. See [Stylesheets](#stylesheets).                    |
 | `hooks`        | `{ [name]: fn \| { callback, once }}` | `undefined`              | Hook callbacks to register at creation time.                                 |
+| `navigation`   | `NavigationAdapter`                   | `undefined`              | Navigation adapter (see [Navigation](#navigation)). Enables `useNavigation()` and `bridge.navigate()`. |
 
 ## Hooks
 
@@ -256,6 +258,7 @@ bridge.emit('custom-event', payload);
 - `getName(): string` — get the PascalCase name.
 - `on(name, callback, once?)` / `off(name, callback)` — manage hook callbacks.
 - `emit(name, ...args)` / `trigger(name, ...args)` — emit hooks.
+- `navigate(url, action?)` — host-facing entry point for the registered navigation adapter (see [Navigation](#navigation)). No-op with a warning when no adapter is set.
 
 ## Composables
 
@@ -274,6 +277,87 @@ hooks.on('mounted', () => {
 ```
 
 All three composables throw a clear error when called outside an app-component context, so misuse fails loudly rather than silently returning `undefined`.
+
+## Navigation
+
+App-components are often embedded into pages that already own their URL. Pass a **navigation adapter** to `AppComponent.create({ navigation })` to give the Vue component a uniform API for reading the current URL and requesting changes, regardless of who actually controls the address bar.
+
+Two built-in adapters ship with the core package:
+
+| Adapter                              | Who owns the URL                | When the Vue side calls `push(url)`            | How the host pushes a URL into the component |
+| ------------------------------------ | ------------------------------- | ---------------------------------------------- | -------------------------------------------- |
+| `createHistoryNavigationAdapter()`   | The component (`window.history`) | Calls `history.pushState`, updates `currentUrl` | n/a — back/forward buttons handled via `popstate` |
+| `createEventNavigationAdapter()`     | The host page                    | Fires the `navigate` hook; URL bar untouched   | Host calls `bridge.navigate(url)`            |
+
+### History mode (component owns the URL)
+
+```ts
+import { AppComponent, createHistoryNavigationAdapter } from '@mindtwo/app-component';
+import MyApp from './MyApp.vue';
+
+AppComponent.create({
+    name: 'my-app',
+    component: MyApp,
+    navigation: createHistoryNavigationAdapter(),
+});
+```
+
+```vue
+<script setup>
+import { watch } from 'vue';
+import { useNavigation } from '@mindtwo/app-component-composables';
+
+const nav = useNavigation();
+watch(nav.currentUrl, (url) => console.log('pathname:', url.pathname));
+</script>
+
+<template>
+    <a href="#" @click.prevent="nav.push('/details')">Go to details</a>
+</template>
+```
+
+### Event mode (host owns the URL)
+
+The host page tells the component about URL changes by calling `bridge.navigate(url)`. When the embedded component wants to navigate, it calls `nav.push(url)` which fires the `navigate` hook — the host listens and decides what to do (update its own router, change the URL bar, etc.).
+
+```ts
+// in the embedded bundle
+import { AppComponent, createEventNavigationAdapter } from '@mindtwo/app-component';
+
+const bridge = await AppComponent.create({
+    name: 'my-app',
+    component: MyApp,
+    navigation: createEventNavigationAdapter(),
+    hooks: {
+        // component asked the host to navigate
+        navigate: ({ url, action }) => console.log('component wants to', action, '→', url),
+    },
+});
+```
+
+```ts
+// in the host page
+const bridge = window.MyApp;
+
+// React to host-side navigation by syncing the component:
+window.addEventListener('hostrouterchange', (e) => {
+    bridge.navigate(e.detail.url);
+});
+```
+
+### Vue API
+
+`useNavigation()` returns the same shape for both adapters:
+
+```ts
+interface NavigationApi {
+    currentUrl: Readonly<Ref<ParsedUrl>>;  // { href, pathname, search, hash, searchParams }
+    push:    (url: string) => void;
+    replace: (url: string) => void;
+}
+```
+
+Route matching is intentionally out of scope — pair the adapter with `vue-router` if you need it. The adapter only owns "what is the current URL?" and "ask to change it."
 
 ## Manifest loader
 

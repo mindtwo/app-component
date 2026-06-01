@@ -20,6 +20,7 @@
         "lint:check": "eslint src --ext .ts,.js,.vue",
         "lint:fix": "eslint src --ext .ts,.js,.vue --fix",
         "typecheck": "tsc --noEmit",
+        "test": "vitest run",
         "build": "npm run prepack"
     },
     "author": "mindtwo",
@@ -35,6 +36,7 @@
         "@typescript-eslint/eslint-plugin": "^8.60.0",
         "@typescript-eslint/parser": "^8.60.0",
         "eslint": "^10.4.1",
+        "jsdom": "^29.1.1",
         "typescript": "^6.0.3",
         "vite": "^8.0.14",
         "vite-plugin-dts": "^5.0.1",

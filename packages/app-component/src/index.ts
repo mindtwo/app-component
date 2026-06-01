@@ -29,7 +29,13 @@ class AppComponent {
         }
 
         // Create the bridge instance
-        const bridge = new AppComponentBridge(this.name, options.component, hooks, options.style);
+        const bridge = new AppComponentBridge(
+            this.name,
+            options.component,
+            hooks,
+            options.style,
+            options.navigation
+        );
 
         // Register the component in the global window object
         const w = window as WindowWithAppComponentBridge;
@@ -181,3 +187,14 @@ export type {
     AppComponentOptionsPartial,
     StyleSpec,
 } from './types/app-component-options';
+export {
+    createHistoryNavigationAdapter,
+    createEventNavigationAdapter,
+    parseUrl,
+    type NavigationAction,
+    type NavigationAdapter,
+    type NavigationAdapterContext,
+    type NavigationApi,
+    type NavigationEvent,
+    type ParsedUrl,
+} from './navigation';

@@ -1,5 +1,6 @@
 import { Hookable, HookCallback, createDebugger } from 'hookable';
 import { type Logger, createLogger } from './logger';
+import type { NavigationEvent } from '../navigation/types';
 
 /**
  * Map of built-in hook names. Consumers can extend this interface via TypeScript
@@ -25,7 +26,7 @@ export interface ComponentHookMap {
     unmounting: unknown;
     unmounted: unknown;
     loaded: unknown;
-    navigate: unknown;
+    navigate: NavigationEvent;
 }
 
 export type ComponentHookName = keyof ComponentHookMap;
