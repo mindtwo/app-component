@@ -1,41 +1,66 @@
 import { Hookable, HookCallback, createDebugger } from 'hookable';
 import { type Logger, createLogger } from './logger';
 
-// TODO make extensible
-export type ComponentHookName =
-    | 'init'
-    | 'connected'
-    | 'ready'
-    | 'disconnected'
-    | 'initialized'
-    | 'creating'
-    | 'created'
-    | 'mounting'
-    | 'mounted'
-    | 'disconnected'
-    | 'unmounting'
-    | 'unmounted';
-// TODO - later
-// | 'navigate'
-// | 'loaded'
-
-function isValidComponentHook(hookName: string): hookName is ComponentHookName {
-    return [
-        'mounting',
-        'creating',
-        'created',
-        'connected',
-        'disconnected',
-        'ready',
-        'initialized',
-        'init',
-        'mounted',
-        'unmounting',
-        'unmounted',
-        // 'loaded',
-        // 'navigate',
-    ].includes(hookName);
+/**
+ * Map of built-in hook names. Consumers can extend this interface via TypeScript
+ * declaration merging to add their own hook names with full type-safety:
+ *
+ * @example
+ * declare module '@mindtwo/app-component' {
+ *     interface ComponentHookMap {
+ *         'analytics:track': (event: string) => void;
+ *     }
+ * }
+ */
+export interface ComponentHookMap {
+    init: unknown;
+    ready: unknown;
+    initialized: unknown;
+    connected: unknown;
+    disconnected: unknown;
+    creating: unknown;
+    created: unknown;
+    mounting: unknown;
+    mounted: unknown;
+    unmounting: unknown;
+    unmounted: unknown;
+    loaded: unknown;
+    navigate: unknown;
 }
+
+export type ComponentHookName = keyof ComponentHookMap;
+
+/**
+ * Names of built-in hooks. Augmented entries from `ComponentHookMap` are accepted
+ * by `on/off/emit` thanks to the `(string & {})` fallback in their signatures,
+ * but only entries listed here suppress the "invalid hook name" warning.
+ *
+ * If you augment `ComponentHookMap`, the warning is informational only — the
+ * callback still runs.
+ */
+const KNOWN_HOOKS = new Set<string>([
+    'init',
+    'ready',
+    'initialized',
+    'connected',
+    'disconnected',
+    'creating',
+    'created',
+    'mounting',
+    'mounted',
+    'unmounting',
+    'unmounted',
+    'loaded',
+    'navigate',
+]);
+
+function isValidComponentHook(hookName: string): boolean {
+    return KNOWN_HOOKS.has(hookName);
+}
+
+// `string & {}` keeps autocomplete for the known keys while still accepting
+// arbitrary strings — useful for hooks added via module augmentation.
+type AnyHookName = ComponentHookName | (string & {});
 
 /**
  * ComponentHooks is a class that extends Hookable to manage component-specific hooks.
@@ -67,12 +92,12 @@ export class ComponentHooks extends Hookable {
     /**
      * Register a hook callback for a specific hook name.
      *
-     * @param {ComponentHookName | string} hookName - The name of the hook.
+     * @param {AnyHookName} hookName - The name of the hook.
      * @param {HookCallback} callback - The callback function to register.
      * @param {boolean} [once=false] - If true, the callback will be called only once.
      * @return {void}
      */
-    public on(hookName: ComponentHookName | string, callback: HookCallback, once?: boolean): void {
+    public on(hookName: AnyHookName, callback: HookCallback, once?: boolean): void {
         if (!isValidComponentHook(hookName)) {
             this._logger.warn(`Invalid hook name: ${hookName}. The callback may not be called.`);
         }
@@ -94,11 +119,11 @@ export class ComponentHooks extends Hookable {
     /**
      * Remove a hook callback for a specific hook name.
      *
-     * @param {ComponentHookName | string} hookName - The name of the hook.
+     * @param {AnyHookName} hookName - The name of the hook.
      * @param {HookCallback} callback - The callback function to remove.
      * @return {void}
      */
-    public off(hookName: ComponentHookName | string, callback: HookCallback): void {
+    public off(hookName: AnyHookName, callback: HookCallback): void {
         if (!isValidComponentHook(hookName)) {
             this._logger.warn(`Invalid hook name: ${hookName}. The callback may not be removed.`);
         }
@@ -111,11 +136,11 @@ export class ComponentHooks extends Hookable {
     /**
      * Emit a hook with the specified name and arguments.
      *
-     * @param {ComponentHookName | string} hookName - The name of the hook to emit.
+     * @param {AnyHookName} hookName - The name of the hook to emit.
      * @param {...unknown[]} args - The arguments to pass to the hook callbacks.
      * @return {Promise<any>}
      */
-    public async emit(hookName: ComponentHookName | string, ...args: unknown[]): Promise<unknown> {
+    public async emit(hookName: AnyHookName, ...args: unknown[]): Promise<unknown> {
         if (!isValidComponentHook(hookName)) {
             this._logger.warn(`Invalid hook name: ${hookName}. The hook may not be called.`);
         }
@@ -130,12 +155,12 @@ export class ComponentHooks extends Hookable {
     /**
      * Alias for emit method to trigger a hook.
      *
-     * @param {ComponentHookName | string} hookName - The name of the hook to trigger.
+     * @param {AnyHookName} hookName - The name of the hook to trigger.
      * @param {...unknown[]} args - The arguments to pass to the hook callbacks.
      * @return {Promise<any>}
      */
     public async trigger(
-        hookName: ComponentHookName | string,
+        hookName: AnyHookName,
         ...args: unknown[]
     ): Promise<unknown> {
         return await this.emit(hookName, ...args);
@@ -146,7 +171,7 @@ export class ComponentHooks extends Hookable {
         this._externalHooks = {};
     }
 
-    private formatHookName(hookName: ComponentHookName | string): string {
+    private formatHookName(hookName: AnyHookName): string {
         if (!this.hookableName) {
             return hookName;
         }

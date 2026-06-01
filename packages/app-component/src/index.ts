@@ -79,24 +79,24 @@ class AppComponent {
      * @static
      * @param {string} name - The name of the component.
      * @param {Component} component - The Vue component to use.
-     * @return {*}  {Promise<void>}
+     * @return {Promise<AppComponentBridge>}
      * @memberof AppComponent
      */
-    static async create(name: string, component: Component): Promise<void>;
+    static async create(name: string, component: Component): Promise<AppComponentBridge>;
 
     /**
      * Create an app component instance with options.
      * @static
      * @param {AppComponentOptionsPartial} options - The options for the component.
-     * @return {*}  {Promise<void>}
+     * @return {Promise<AppComponentBridge>}
      * @memberof AppComponent
      */
-    static async create(options: AppComponentOptionsPartial): Promise<void>;
+    static async create(options: AppComponentOptionsPartial): Promise<AppComponentBridge>;
 
     static async create(
         nameOrOptions: string | AppComponentOptionsPartial,
         maybeComponent?: Component
-    ): Promise<void> {
+    ): Promise<AppComponentBridge> {
         let options = undefined;
 
         if (typeof nameOrOptions === 'string') {
@@ -150,7 +150,7 @@ class AppComponent {
             await componentBridge.mount();
         }
 
-        // TODO: return something?
+        return componentBridge;
     }
 
     protected static getHooksInstance(
@@ -173,3 +173,11 @@ class AppComponent {
 }
 
 export { AppComponent };
+export { default as AppComponentBridge } from './AppComponentBridge';
+export { default as AppComponentHtmlElement } from './AppComponentHtmlElement';
+export { ComponentHooks, type ComponentHookMap, type ComponentHookName } from './lib/hooks';
+export type {
+    AppComponentOptions,
+    AppComponentOptionsPartial,
+    StyleSpec,
+} from './types/app-component-options';

@@ -4,6 +4,12 @@ import { PartialButKeep } from './util';
 
 type HookFn = (...args: unknown[]) => void | Promise<void>;
 
+/**
+ * A single stylesheet entry — either a URL (rendered as `<link rel="stylesheet">`)
+ * or inline CSS (rendered as `<style>`).
+ */
+export type StyleSpec = string | { url: string } | { css: string };
+
 export interface AppComponentOptions {
     /**
      * Name of the app component
@@ -48,9 +54,11 @@ export interface AppComponentOptions {
     globalHooks?: boolean;
 
     /**
-     * Optional CSS style or style sheet url for the component
+     * Optional stylesheet(s) for the component. A bare string is treated as a
+     * URL (rendered as `<link>`). Use `{ css: '...' }` for inline CSS, or pass
+     * an array to combine multiple entries.
      */
-    style?: string;
+    style?: StyleSpec | StyleSpec[];
 
     /**
      * Optional hooks for the component

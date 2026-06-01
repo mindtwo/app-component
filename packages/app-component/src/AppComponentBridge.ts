@@ -2,6 +2,7 @@ import { App, Component, createApp, h } from 'vue';
 import { type Logger, createLogger } from './lib/logger';
 import AppComponentHtmlElement from './AppComponentHtmlElement';
 import { ComponentHooks } from './lib/hooks';
+import type { StyleSpec } from './types/app-component-options';
 import defu from 'defu';
 
 export type WindowWithAppComponentBridge = Window &
@@ -29,7 +30,7 @@ export default class AppComponentBridge {
     // Hooks for the component
     private hooks: ComponentHooks;
 
-    private styles?: string;
+    private styles?: StyleSpec | StyleSpec[];
 
     // Root component of the app
     private rootComponent: Component;
@@ -41,9 +42,14 @@ export default class AppComponentBridge {
     private element: AppComponentHtmlElement | null = null;
 
     // Properties and attributes
-    private _props: { [key: string]: string } = {};
+    private _props: { [key: string]: unknown } = {};
 
-    constructor(name: string, component: Component, hooks: ComponentHooks, styles?: string) {
+    constructor(
+        name: string,
+        component: Component,
+        hooks: ComponentHooks,
+        styles?: StyleSpec | StyleSpec[]
+    ) {
         this._logger = createLogger();
 
         // Set properties
@@ -129,14 +135,15 @@ export default class AppComponentBridge {
 
         await this.hooks.emit('created', this, this.vueApp);
 
-        // Add stylesheet to root if provided
+        // Add stylesheet(s) to root if provided
         if (this.styles) {
-            // TODO support creation of style elements
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = this.styles;
+            const root = this.element.root();
+            const specs = Array.isArray(this.styles) ? this.styles : [this.styles];
 
-            this.element.root().appendChild(link);
+            for (const spec of specs) {
+                const node = createStyleNode(spec);
+                if (node) root.appendChild(node);
+            }
         }
     }
 
@@ -145,7 +152,7 @@ export default class AppComponentBridge {
      *
      * @returns {Promise<void>}
      */
-    public async mount(props?: { [key: string]: string }): Promise<void> {
+    public async mount(props?: { [key: string]: unknown }): Promise<void> {
         await this.hooks.emit('mounting', this, this.vueApp);
 
         // Logic to mount the app component
@@ -277,4 +284,28 @@ export default class AppComponentBridge {
     public trigger(hookName: string, data?: any): void {
         this.hooks.trigger(hookName, data);
     }
+}
+
+function createStyleNode(spec: StyleSpec): HTMLElement | null {
+    if (typeof spec === 'string') {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = spec;
+        return link;
+    }
+
+    if ('url' in spec) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = spec.url;
+        return link;
+    }
+
+    if ('css' in spec) {
+        const style = document.createElement('style');
+        style.textContent = spec.css;
+        return style;
+    }
+
+    return null;
 }
