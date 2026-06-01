@@ -2,6 +2,13 @@ import { type Logger, createLogger } from './lib/logger';
 import NAMES from './lib/attribute-list';
 import kebabCase from 'just-kebab-case';
 import { ComponentHooks } from './lib/hooks';
+import {
+    type AttributeType,
+    isAttributeType,
+    parseAttribute,
+} from './lib/parse-attribute';
+
+const TYPE_HINT_PREFIX = 'data-type-';
 
 export default class AppComponentHtmlElement extends HTMLElement {
     private _logger: Logger;
@@ -20,7 +27,7 @@ export default class AppComponentHtmlElement extends HTMLElement {
     // Attributes and props
     autoMount: boolean = false;
 
-    protected _props: { [key: string]: string } = {};
+    protected _props: { [key: string]: unknown } = {};
     protected _attrs: { [key: string]: string } = {};
 
     constructor(name: string, useShadowRoot: boolean = false, hooks?: ComponentHooks) {
@@ -171,7 +178,7 @@ export default class AppComponentHtmlElement extends HTMLElement {
         return this._attrs;
     }
 
-    get props(): { [key: string]: string } {
+    get props(): { [key: string]: unknown } {
         if (Object.keys(this._props).length === 0) {
             this.collectProps();
         }
@@ -196,8 +203,26 @@ export default class AppComponentHtmlElement extends HTMLElement {
             return;
         }
 
-        // TODO: value parsing
-        // Collect props from the component
+        // Pass 1: collect type hints (data-type-{prop}="number|boolean|json|string")
+        const typeHints: { [propName: string]: AttributeType } = {};
+        for (const attr of Array.from(this.attributes)) {
+            const attrName = kebabCase(attr.name);
+
+            if (!attrName.startsWith(TYPE_HINT_PREFIX)) continue;
+
+            const propName = attrName.slice(TYPE_HINT_PREFIX.length);
+            if (!propName) continue;
+
+            if (isAttributeType(attr.value)) {
+                typeHints[propName] = attr.value;
+            } else {
+                this._logger.warn(
+                    `Ignoring ${attrName}="${attr.value}" — expected one of "string", "number", "boolean", "json".`
+                );
+            }
+        }
+
+        // Pass 2: collect props, applying type hints when present
         for (const attr of Array.from(this.attributes)) {
             const attrName = kebabCase(attr.name);
 
@@ -206,12 +231,18 @@ export default class AppComponentHtmlElement extends HTMLElement {
                 continue;
             }
 
+            if (attrName.startsWith(TYPE_HINT_PREFIX)) {
+                // Type-hint attributes are metadata, not forwarded as props
+                continue;
+            }
+
             if (attrName === 'auto-mount') {
                 this.autoMount = attr.value === 'true';
                 continue;
             }
 
-            this._props[attrName] = attr.value;
+            const type = typeHints[attrName] ?? 'string';
+            this._props[attrName] = parseAttribute(attr.value, type);
         }
     }
 

@@ -7,8 +7,10 @@
     ],
     "main": "./dist/app-component.umd.cjs",
     "module": "./dist/app-component.js",
+    "types": "./dist/index.d.ts",
     "exports": {
         ".": {
+            "types": "./dist/index.d.ts",
             "import": "./dist/app-component.js",
             "require": "./dist/app-component.umd.cjs"
         }
@@ -18,28 +20,31 @@
         "lint:check": "eslint src --ext .ts,.js,.vue",
         "lint:fix": "eslint src --ext .ts,.js,.vue --fix",
         "typecheck": "tsc --noEmit",
+        "test": "vitest run",
         "build": "npm run prepack"
     },
     "author": "mindtwo",
     "license": "ISC",
     "dependencies": {
-        "defu": "^6.1.4",
-        "hookable": "^5.5.3",
+        "defu": "^6.1.7",
+        "hookable": "^6.1.1",
         "just-kebab-case": "^4.2.0",
         "just-pascal-case": "^3.2.0"
     },
     "devDependencies": {
-        "@eslint/js": "^9.0.0",
-        "@typescript-eslint/eslint-plugin": "^8.0.0",
-        "@typescript-eslint/parser": "^8.0.0",
-        "eslint": "^9.0.0",
-        "typescript": "^5.0.0",
-        "vite": "^7.0.4",
-        "vitest": "^3.2.4",
-        "vue": "^3.5.17"
+        "@eslint/js": "^10.0.1",
+        "@typescript-eslint/eslint-plugin": "^8.60.0",
+        "@typescript-eslint/parser": "^8.60.0",
+        "eslint": "^10.4.1",
+        "jsdom": "^29.1.1",
+        "typescript": "^6.0.3",
+        "vite": "^8.0.14",
+        "vite-plugin-dts": "^5.0.1",
+        "vitest": "^4.1.7",
+        "vue": "^3.5.35"
     },
     "peerDependencies": {
         "vue": "^3.5.17"
     },
-    "version": ""
+    "version": "0.0.0"
 }

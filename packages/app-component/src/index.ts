@@ -29,7 +29,13 @@ class AppComponent {
         }
 
         // Create the bridge instance
-        const bridge = new AppComponentBridge(this.name, options.component, hooks, options.style);
+        const bridge = new AppComponentBridge(
+            this.name,
+            options.component,
+            hooks,
+            options.style,
+            options.navigation
+        );
 
         // Register the component in the global window object
         const w = window as WindowWithAppComponentBridge;
@@ -66,10 +72,11 @@ class AppComponent {
      */
     protected bridge(): AppComponentBridge {
         const w = window as WindowWithAppComponentBridge;
-        if (!w[this.name]) {
+        const bridge = w[this.name];
+        if (!bridge || !(bridge instanceof AppComponentBridge)) {
             throw new Error(`App component bridge not found for: ${this.name}`);
         }
-        return w[this.name];
+        return bridge;
     }
 
     // Overload signatures
@@ -78,24 +85,24 @@ class AppComponent {
      * @static
      * @param {string} name - The name of the component.
      * @param {Component} component - The Vue component to use.
-     * @return {*}  {Promise<void>}
+     * @return {Promise<AppComponentBridge>}
      * @memberof AppComponent
      */
-    static async create(name: string, component: Component): Promise<void>;
+    static async create(name: string, component: Component): Promise<AppComponentBridge>;
 
     /**
      * Create an app component instance with options.
      * @static
      * @param {AppComponentOptionsPartial} options - The options for the component.
-     * @return {*}  {Promise<void>}
+     * @return {Promise<AppComponentBridge>}
      * @memberof AppComponent
      */
-    static async create(options: AppComponentOptionsPartial): Promise<void>;
+    static async create(options: AppComponentOptionsPartial): Promise<AppComponentBridge>;
 
     static async create(
         nameOrOptions: string | AppComponentOptionsPartial,
         maybeComponent?: Component
-    ): Promise<void> {
+    ): Promise<AppComponentBridge> {
         let options = undefined;
 
         if (typeof nameOrOptions === 'string') {
@@ -149,7 +156,7 @@ class AppComponent {
             await componentBridge.mount();
         }
 
-        // TODO: return something?
+        return componentBridge;
     }
 
     protected static getHooksInstance(
@@ -172,3 +179,22 @@ class AppComponent {
 }
 
 export { AppComponent };
+export { default as AppComponentBridge } from './AppComponentBridge';
+export { default as AppComponentHtmlElement } from './AppComponentHtmlElement';
+export { ComponentHooks, type ComponentHookMap, type ComponentHookName } from './lib/hooks';
+export type {
+    AppComponentOptions,
+    AppComponentOptionsPartial,
+    StyleSpec,
+} from './types/app-component-options';
+export {
+    createHistoryNavigationAdapter,
+    createEventNavigationAdapter,
+    parseUrl,
+    type NavigationAction,
+    type NavigationAdapter,
+    type NavigationAdapterContext,
+    type NavigationApi,
+    type NavigationEvent,
+    type ParsedUrl,
+} from './navigation';

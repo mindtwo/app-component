@@ -1,8 +1,15 @@
 import kebabCase from 'just-kebab-case';
 import { Component } from 'vue';
 import { PartialButKeep } from './util';
+import type { NavigationAdapter } from '../navigation/types';
 
 type HookFn = (...args: unknown[]) => void | Promise<void>;
+
+/**
+ * A single stylesheet entry — either a URL (rendered as `<link rel="stylesheet">`)
+ * or inline CSS (rendered as `<style>`).
+ */
+export type StyleSpec = string | { url: string } | { css: string };
 
 export interface AppComponentOptions {
     /**
@@ -48,9 +55,11 @@ export interface AppComponentOptions {
     globalHooks?: boolean;
 
     /**
-     * Optional CSS style or style sheet url for the component
+     * Optional stylesheet(s) for the component. A bare string is treated as a
+     * URL (rendered as `<link>`). Use `{ css: '...' }` for inline CSS, or pass
+     * an array to combine multiple entries.
      */
-    style?: string;
+    style?: StyleSpec | StyleSpec[];
 
     /**
      * Optional hooks for the component
@@ -58,6 +67,14 @@ export interface AppComponentOptions {
     hooks?: {
         [key: string]: { once?: boolean; callback: HookFn } | HookFn;
     };
+
+    /**
+     * Optional navigation adapter. When set, the bridge exposes
+     * `bridge.navigate(url)` for the host and `useNavigation()` for Vue
+     * components. See `createHistoryNavigationAdapter` and
+     * `createEventNavigationAdapter` for the built-in implementations.
+     */
+    navigation?: NavigationAdapter;
 }
 
 export type AppComponentOptionsPartial = PartialButKeep<AppComponentOptions, 'name' | 'component'>;
@@ -89,5 +106,6 @@ export function createAppComponentOptions(
         globalHooks: options.globalHooks || false,
         hooks: options.hooks,
         style: options.style || '',
+        navigation: options.navigation,
     };
 }

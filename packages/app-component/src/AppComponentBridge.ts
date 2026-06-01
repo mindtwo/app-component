@@ -2,11 +2,18 @@ import { App, Component, createApp, h } from 'vue';
 import { type Logger, createLogger } from './lib/logger';
 import AppComponentHtmlElement from './AppComponentHtmlElement';
 import { ComponentHooks } from './lib/hooks';
+import type { StyleSpec } from './types/app-component-options';
+import type {
+    NavigationAction,
+    NavigationAdapter,
+    NavigationAdapterContext,
+} from './navigation/types';
 import defu from 'defu';
 
 export type WindowWithAppComponentBridge = Window &
     typeof globalThis & {
-        [key: string]: AppComponentBridge;
+        __appComponentGlobalHooks?: ComponentHooks;
+        [key: string]: AppComponentBridge | ComponentHooks | undefined;
     };
 
 /**
@@ -28,7 +35,10 @@ export default class AppComponentBridge {
     // Hooks for the component
     private hooks: ComponentHooks;
 
-    private styles?: string;
+    private styles?: StyleSpec | StyleSpec[];
+
+    // Optional navigation adapter (history mode, event mode, or custom)
+    private adapter?: NavigationAdapter;
 
     // Root component of the app
     private rootComponent: Component;
@@ -40,9 +50,15 @@ export default class AppComponentBridge {
     private element: AppComponentHtmlElement | null = null;
 
     // Properties and attributes
-    private _props: { [key: string]: string } = {};
+    private _props: { [key: string]: unknown } = {};
 
-    constructor(name: string, component: Component, hooks: ComponentHooks, styles?: string) {
+    constructor(
+        name: string,
+        component: Component,
+        hooks: ComponentHooks,
+        styles?: StyleSpec | StyleSpec[],
+        navigation?: NavigationAdapter
+    ) {
         this._logger = createLogger();
 
         // Set properties
@@ -50,6 +66,27 @@ export default class AppComponentBridge {
         this.rootComponent = component;
         this.hooks = hooks;
         this.styles = styles;
+        this.adapter = navigation;
+    }
+
+    private buildNavigationContext(): NavigationAdapterContext {
+        return {
+            emit: (event) => this.hooks.emit('navigate', event),
+        };
+    }
+
+    /**
+     * Host-facing navigation entry point. When a navigation adapter is
+     * registered, the bridge forwards the call to the adapter's `setUrl`.
+     */
+    public navigate(url: string, action: NavigationAction = 'sync'): void {
+        if (!this.adapter) {
+            this._logger.warn(
+                `navigate() called on "${this.name}" but no navigation adapter was registered.`
+            );
+            return;
+        }
+        this.adapter.setUrl(url, action);
     }
 
     public setElement(element: AppComponentHtmlElement): void {
@@ -125,17 +162,29 @@ export default class AppComponentBridge {
         // Provide hooks to the Vue app
         this.vueApp.provide('hooks', this.hooks);
         this.vueApp.provide('$getRoot', () => this.element?.root());
+        this.vueApp.provide('$appComponent', {
+            name: this.name,
+            bridge: this,
+            element: this.element,
+        });
+
+        // Wire up the navigation adapter (if any) and expose it via inject
+        if (this.adapter) {
+            this.adapter.install(this.buildNavigationContext());
+        }
+        this.vueApp.provide('$navigation', this.adapter ?? null);
 
         await this.hooks.emit('created', this, this.vueApp);
 
-        // Add stylesheet to root if provided
+        // Add stylesheet(s) to root if provided
         if (this.styles) {
-            // TODO support creation of style elements
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = this.styles;
+            const root = this.element.root();
+            const specs = Array.isArray(this.styles) ? this.styles : [this.styles];
 
-            this.element.root().appendChild(link);
+            for (const spec of specs) {
+                const node = createStyleNode(spec);
+                if (node) root.appendChild(node);
+            }
         }
     }
 
@@ -144,7 +193,7 @@ export default class AppComponentBridge {
      *
      * @returns {Promise<void>}
      */
-    public async mount(props?: { [key: string]: string }): Promise<void> {
+    public async mount(props?: { [key: string]: unknown }): Promise<void> {
         await this.hooks.emit('mounting', this, this.vueApp);
 
         // Logic to mount the app component
@@ -204,6 +253,9 @@ export default class AppComponentBridge {
         // if (w[this.name]) {
         //     delete w[this.name];
         // }
+
+        // Tear down the navigation adapter, if any
+        this.adapter?.dispose();
 
         await this.hooks.emit('unmounted', this);
         this.removeExternalHooks();
@@ -276,4 +328,28 @@ export default class AppComponentBridge {
     public trigger(hookName: string, data?: any): void {
         this.hooks.trigger(hookName, data);
     }
+}
+
+function createStyleNode(spec: StyleSpec): HTMLElement | null {
+    if (typeof spec === 'string') {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = spec;
+        return link;
+    }
+
+    if ('url' in spec) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = spec.url;
+        return link;
+    }
+
+    if ('css' in spec) {
+        const style = document.createElement('style');
+        style.textContent = spec.css;
+        return style;
+    }
+
+    return null;
 }
