@@ -22,13 +22,16 @@
         "typecheck": "tsc --noEmit",
         "lint:check": "eslint --cache .",
         "lint:fix": "npm run lint:check -- --fix",
+        "test": "vitest run",
         "build": "npm run typecheck && npm run prepack"
     },
     "author": "mindtwo",
     "license": "ISC",
     "devDependencies": {
+        "jsdom": "^29.1.1",
         "tsdown": "^0.22.1",
         "typescript": "^6.0.3",
+        "vitest": "^4.1.7",
         "vue": "^3.5.35"
     },
     "peerDependencies": {

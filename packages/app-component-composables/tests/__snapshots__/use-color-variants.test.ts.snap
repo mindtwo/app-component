@@ -1,0 +1,92 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`useColorVariants — OKLCH baseline (regression lock) > produces a stable default ramp for #3366ff 1`] = `
+{
+  "--brand": "#3366ff",
+  "--brand-contrast": "#ffffff",
+  "--brand-dark": "#153bd4",
+  "--brand-darker": "#0a00a0",
+  "--brand-light": "#65a1ff",
+  "--brand-lighter": "#82c3ff",
+}
+`;
+
+exports[`useColorVariants — OKLCH baseline (regression lock) > produces a stable tailwind ramp for #3366ff 1`] = `
+{
+  "--primary-100": "#a1e6ff",
+  "--primary-200": "#92d4ff",
+  "--primary-300": "#7cbcff",
+  "--primary-400": "#629eff",
+  "--primary-50": "#abf0ff",
+  "--primary-500": "#3366ff",
+  "--primary-600": "#2d5ef7",
+  "--primary-700": "#153bd4",
+  "--primary-800": "#0917b8",
+  "--primary-900": "#0b009d",
+  "--primary-950": "#15007e",
+}
+`;
+
+exports[`useColorVariants — OKLCH baseline (regression lock) > produces a stable tailwind ramp for grayish (#8a8d91) 1`] = `
+{
+  "--c-100": "#ebeff3",
+  "--c-200": "#dbdee3",
+  "--c-300": "#c4c8cc",
+  "--c-400": "#a8abaf",
+  "--c-50": "#f5f9fd",
+  "--c-500": "#8a8d91",
+  "--c-600": "#6f7276",
+  "--c-700": "#535559",
+  "--c-800": "#3d4043",
+  "--c-900": "#292c2f",
+  "--c-950": "#141619",
+}
+`;
+
+exports[`useColorVariants — OKLCH baseline (regression lock) > produces a stable tailwind ramp for greenish (#2a9d8f) 1`] = `
+{
+  "--c-100": "#9cfff5",
+  "--c-200": "#8bf4e4",
+  "--c-300": "#73ddcd",
+  "--c-400": "#54c0b1",
+  "--c-50": "#a6ffff",
+  "--c-500": "#2a9d8f",
+  "--c-600": "#008477",
+  "--c-700": "#00675b",
+  "--c-800": "#005045",
+  "--c-900": "#003a30",
+  "--c-950": "#00221a",
+}
+`;
+
+exports[`useColorVariants — OKLCH baseline (regression lock) > produces a stable tailwind ramp for reddish (#e63946) 1`] = `
+{
+  "--c-100": "#ffafad",
+  "--c-200": "#ff9e9d",
+  "--c-300": "#ff8687",
+  "--c-400": "#ff676c",
+  "--c-50": "#ffb9b7",
+  "--c-500": "#e63946",
+  "--c-600": "#cf1c34",
+  "--c-700": "#ab0015",
+  "--c-800": "#8f0000",
+  "--c-900": "#720000",
+  "--c-950": "#530000",
+}
+`;
+
+exports[`useColorVariants — OKLCH baseline (regression lock) > produces a stable tailwind ramp for yellowish (#f4c430) 1`] = `
+{
+  "--c-100": "#ffe85f",
+  "--c-200": "#ffd84b",
+  "--c-300": "#f1c12b",
+  "--c-400": "#d3a400",
+  "--c-50": "#fff36a",
+  "--c-500": "#f4c430",
+  "--c-600": "#976900",
+  "--c-700": "#784c00",
+  "--c-800": "#613500",
+  "--c-900": "#4a1e00",
+  "--c-950": "#310400",
+}
+`;
