@@ -198,6 +198,12 @@
          * @returns
          */
         loadScript: async function (script) {
+            // Normalize string inputs (e.g. manifest-key strings from `entry.imports`)
+            // into asset objects so we can safely attach an `id` for dedupe tracking.
+            if (typeof script === 'string') {
+                script = { src: script };
+            }
+
             if (this.isAssetLoaded(script)) {
                 logger.info(`Script already loaded: ${script.file || script.src}`);
                 return;
@@ -205,7 +211,7 @@
 
             const baseUrl = getBaseUrl();
 
-            const scriptUrl = typeof script === 'string' ? script : script.file || script.src;
+            const scriptUrl = script.file || script.src;
             const src = resolveUrl(
                 scriptUrl.startsWith('/') ? scriptUrl : `${baseUrl}/${scriptUrl}`
             );
@@ -262,6 +268,10 @@
          * @returns
          */
         loadStylesheet: function (stylesheet) {
+            if (typeof stylesheet === 'string') {
+                stylesheet = { src: stylesheet };
+            }
+
             if (this.isAssetLoaded(stylesheet)) {
                 logger.info(`Stylesheet already loaded: ${stylesheet.file || stylesheet.src}`);
                 return;
@@ -277,8 +287,7 @@
             }
 
             const baseUrl = getBaseUrl();
-            const styleUrl =
-                typeof stylesheet === 'string' ? stylesheet : stylesheet.file || stylesheet.src;
+            const styleUrl = stylesheet.file || stylesheet.src;
             const linkHref = resolveUrl(
                 styleUrl.startsWith('/') ? styleUrl : `${baseUrl}/${styleUrl}`
             );
@@ -395,6 +404,41 @@
                 throw error;
             }
         },
+        /**
+         * Walk an entry's `imports` graph and return a de-duplicated, dependency-ordered
+         * list of manifest chunk objects. Strings in `imports` are manifest keys, so
+         * each one is resolved against `this.manifest` before recursing.
+         */
+        resolveChunks: function (entry, seen) {
+            seen = seen || new Set();
+            const chunks = [];
+            const imports = (entry && entry.imports) || [];
+
+            for (const key of imports) {
+                if (typeof key !== 'string' || seen.has(key)) continue;
+                seen.add(key);
+
+                const chunk = this.manifest && this.manifest[key];
+                if (!chunk) {
+                    logger.warn(`Import "${key}" not found in manifest, skipping`);
+                    continue;
+                }
+
+                // Depth-first: load dependencies before the chunk that needs them.
+                chunks.push(...this.resolveChunks(chunk, seen));
+                chunks.push(chunk);
+
+                // Stylesheets that ride along with a chunk
+                const cssFiles = chunk.css || [];
+                if (Array.isArray(cssFiles)) {
+                    cssFiles.forEach((cssFile) => {
+                        this.stylesheets.push({ src: cssFile, file: cssFile });
+                    });
+                }
+            }
+
+            return chunks;
+        },
         reload: async function () {
             if (!this.manifest) {
                 throw new Error('Manifest is not loaded, cannot refresh');
@@ -402,8 +446,7 @@
 
             // Load all scripts and stylesheets again
             for (const entry of this.scripts) {
-                // Load JavaScript chunks
-                const chunks = entry.imports || [];
+                const chunks = this.resolveChunks(entry);
                 for (const chunk of chunks) {
                     await this.loadScript(chunk);
                 }
@@ -432,8 +475,7 @@
             // Load all scripts
             try {
                 for (const entry of this.scripts) {
-                    // Load JavaScript chunks
-                    const chunks = entry.imports || [];
+                    const chunks = this.resolveChunks(entry);
                     for (const chunk of chunks) {
                         await this.loadScript(chunk);
                     }
