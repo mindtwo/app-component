@@ -247,6 +247,7 @@
                 const s = document.createElement('script');
                 s.id = scriptId;
                 s.src = src;
+                s.type = 'module';
                 s.async = true;
                 s.onload = () => {
                     // Call the entryLoading hook for scripts
