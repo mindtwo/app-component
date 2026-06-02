@@ -12,16 +12,30 @@ interface Loader {
     manifest: Record<string, any> | undefined;
     stylesheets: any[];
     resolveChunks: (entry: any, seen?: Set<string>) => any[];
+    preloadModule: (chunk: any) => void;
 }
 
-function loadTemplate(): Loader {
+interface TemplateHandles {
+    loader: Loader;
+    document: any;
+    appended: any[];
+}
+
+function loadTemplate(): TemplateHandles {
     const source = readFileSync(TEMPLATE_PATH, 'utf8');
 
+    const appended: any[] = [];
     const fakeDocument = {
         readyState: 'loading',
-        head: { appendChild: () => {} },
+        head: {
+            appendChild: (el: any) => {
+                appended.push(el);
+                return el;
+            },
+        },
         getElementById: () => null,
-        createElement: () => ({}),
+        querySelector: () => null,
+        createElement: () => ({} as Record<string, any>),
         addEventListener: () => {},
         dispatchEvent: () => {},
     };
@@ -40,14 +54,18 @@ function loadTemplate(): Loader {
 
     vm.runInContext(source, context);
 
-    return fakeWindow['__APP_COMPONENT_LOADER_NAME__'] as Loader;
+    return {
+        loader: fakeWindow['__APP_COMPONENT_LOADER_NAME__'] as Loader,
+        document: fakeDocument,
+        appended,
+    };
 }
 
 describe('manifest-loader runtime: resolveChunks', () => {
     let loader: Loader;
 
     beforeEach(() => {
-        loader = loadTemplate();
+        loader = loadTemplate().loader;
         loader.stylesheets = [];
     });
 
@@ -178,5 +196,51 @@ describe('manifest-loader runtime: resolveChunks', () => {
         };
 
         expect(loader.resolveChunks(loader.manifest.entry)).toEqual([]);
+    });
+});
+
+describe('manifest-loader runtime: preloadModule', () => {
+    let handles: TemplateHandles;
+
+    beforeEach(() => {
+        handles = loadTemplate();
+        // createElement returns a fresh object each call so the loader can
+        // assign rel/href/id on it
+        handles.document.createElement = () => ({}) as Record<string, any>;
+        handles.appended.length = 0;
+    });
+
+    it('injects a modulepreload link for a chunk', () => {
+        handles.loader.preloadModule({ file: 'assets/vue.js' });
+
+        expect(handles.appended).toHaveLength(1);
+        expect(handles.appended[0]).toMatchObject({
+            rel: 'modulepreload',
+            href: 'http://localhost/__BASE_PATH__/assets/vue.js',
+        });
+        expect(handles.appended[0].id).toMatch(/^preload-/);
+    });
+
+    it('accepts a string chunk and resolves absolute paths', () => {
+        handles.loader.preloadModule('/static/assets/vue.js');
+
+        expect(handles.appended).toHaveLength(1);
+        expect(handles.appended[0].href).toBe(
+            'http://localhost/static/assets/vue.js'
+        );
+    });
+
+    it('skips when an existing preload or script tag matches', () => {
+        handles.document.querySelector = () => ({}); // pretend something already exists
+
+        handles.loader.preloadModule({ file: 'assets/vue.js' });
+
+        expect(handles.appended).toHaveLength(0);
+    });
+
+    it('does nothing when chunk has no file or src', () => {
+        handles.loader.preloadModule({});
+
+        expect(handles.appended).toHaveLength(0);
     });
 });

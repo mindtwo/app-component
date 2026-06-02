@@ -263,6 +263,36 @@
             });
         },
         /**
+         * Inject a <link rel="modulepreload"> tag so the browser fetches a
+         * dependency chunk in parallel. Execution order is still decided by
+         * the entry module's static import graph.
+         */
+        preloadModule: function (chunk) {
+            if (typeof chunk === 'string') {
+                chunk = { src: chunk };
+            }
+
+            const href = chunk.file || chunk.src;
+            if (!href) return;
+
+            const baseUrl = getBaseUrl();
+            const resolved = resolveUrl(
+                href.startsWith('/') ? href : `${baseUrl}/${href}`
+            );
+
+            // Skip if a preload (or the script itself) for this URL already exists.
+            const existing = document.querySelector(
+                `link[rel="modulepreload"][href="${resolved}"], script[src="${resolved}"]`
+            );
+            if (existing) return;
+
+            const link = document.createElement('link');
+            link.rel = 'modulepreload';
+            link.href = resolved;
+            link.id = createRandomId('preload');
+            document.head.appendChild(link);
+        },
+        /**
          * Load a stylesheet for given linkHref
          *
          * @param {*} stylesheet
@@ -445,14 +475,16 @@
                 throw new Error('Manifest is not loaded, cannot refresh');
             }
 
-            // Load all scripts and stylesheets again
+            // Reload entries. resolveChunks is still called for its CSS
+            // side-effect and to know what to preload; the chunks themselves
+            // are *not* injected as <script> tags — the entry module's static
+            // import graph drives execution.
             for (const entry of this.scripts) {
                 const chunks = this.resolveChunks(entry);
                 for (const chunk of chunks) {
-                    await this.loadScript(chunk);
+                    this.preloadModule(chunk);
                 }
 
-                // Load main entry script
                 await this.loadScript(entry);
             }
 
@@ -473,15 +505,16 @@
                 throw new Error('Manifest is not loaded, cannot proceed with loading');
             }
 
-            // Load all scripts
+            // Load entries. Dependency chunks are warmed via modulepreload so
+            // the browser can fetch them in parallel; the entry <script> is
+            // the only one we execute — its static imports pull the rest in.
             try {
                 for (const entry of this.scripts) {
                     const chunks = this.resolveChunks(entry);
                     for (const chunk of chunks) {
-                        await this.loadScript(chunk);
+                        this.preloadModule(chunk);
                     }
 
-                    // Load main entry script
                     await this.loadScript(entry);
                 }
             } catch (error) {}
