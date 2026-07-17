@@ -65,7 +65,7 @@
      * @returns {string} - The base URL for the app component.
      */
     function getBaseUrl() {
-        const basePath = '__BASE_PATH__';
+        const basePath = __BASE_PATH__;
 
         if (basePath.startsWith('window.') && window[basePath.slice(7)]) {
             const resolvedPath = window[basePath.slice(7)];
@@ -500,8 +500,8 @@
     };
 
     const loadComponentFromManifest = async () => {
-        const manifestUrl = '__MANIFEST_URL__';
-        const basePath = '__BASE_PATH__';
+        const manifestUrl = __MANIFEST_URL__;
+        const basePath = __BASE_PATH__;
 
         const appComponentName = '__APP_COMPONENT_NAME__';
 

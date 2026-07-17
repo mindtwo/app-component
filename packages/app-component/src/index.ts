@@ -34,7 +34,7 @@ class AppComponent {
             options.component,
             hooks,
             options.style,
-            options.navigation
+            options.plugins
         );
 
         // Register the component in the global window object
@@ -185,16 +185,6 @@ export { ComponentHooks, type ComponentHookMap, type ComponentHookName } from '.
 export type {
     AppComponentOptions,
     AppComponentOptionsPartial,
+    AppComponentPlugin,
     StyleSpec,
 } from './types/app-component-options';
-export {
-    createHistoryNavigationAdapter,
-    createEventNavigationAdapter,
-    parseUrl,
-    type NavigationAction,
-    type NavigationAdapter,
-    type NavigationAdapterContext,
-    type NavigationApi,
-    type NavigationEvent,
-    type ParsedUrl,
-} from './navigation';

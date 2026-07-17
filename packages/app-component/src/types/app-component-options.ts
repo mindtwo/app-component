@@ -1,7 +1,6 @@
 import kebabCase from 'just-kebab-case';
-import { Component } from 'vue';
+import { Component, type Plugin } from 'vue';
 import { PartialButKeep } from './util';
-import type { NavigationAdapter } from '../navigation/types';
 
 type HookFn = (...args: unknown[]) => void | Promise<void>;
 
@@ -10,6 +9,13 @@ type HookFn = (...args: unknown[]) => void | Promise<void>;
  * or inline CSS (rendered as `<style>`).
  */
 export type StyleSpec = string | { url: string } | { css: string };
+
+/**
+ * A Vue plugin to install on the component's app instance. Either the plugin
+ * itself (`app.use(plugin)`) or a `[plugin, ...options]` tuple for plugins that
+ * take install options (`app.use(plugin, ...options)`).
+ */
+export type AppComponentPlugin = Plugin | [Plugin, ...unknown[]];
 
 export interface AppComponentOptions {
     /**
@@ -69,12 +75,17 @@ export interface AppComponentOptions {
     };
 
     /**
-     * Optional navigation adapter. When set, the bridge exposes
-     * `bridge.navigate(url)` for the host and `useNavigation()` for Vue
-     * components. See `createHistoryNavigationAdapter` and
-     * `createEventNavigationAdapter` for the built-in implementations.
+     * Optional Vue plugins to install on the component's app instance before it
+     * mounts — e.g. `vue-router`, `pinia`, or `vue-i18n`. Each entry is applied
+     * via `app.use(...)`. Use a `[plugin, ...options]` tuple to pass install
+     * options.
+     *
+     * @example
+     * import { createRouter, createMemoryHistory } from 'vue-router';
+     * const router = createRouter({ history: createMemoryHistory(), routes });
+     * AppComponent.create({ name, component, plugins: [router] });
      */
-    navigation?: NavigationAdapter;
+    plugins?: AppComponentPlugin[];
 }
 
 export type AppComponentOptionsPartial = PartialButKeep<AppComponentOptions, 'name' | 'component'>;
@@ -106,6 +117,6 @@ export function createAppComponentOptions(
         globalHooks: options.globalHooks || false,
         hooks: options.hooks,
         style: options.style || '',
-        navigation: options.navigation,
+        plugins: options.plugins,
     };
 }
