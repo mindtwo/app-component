@@ -45,8 +45,10 @@ const getManifestLoaderContent = (
 
     return templateContent
         .replace('__DEBUG_MANIFEST_LOADER__', debug ? 'true' : 'false')
-        .replaceAll('__MANIFEST_URL__', manifestUrl)
-        .replaceAll('__BASE_PATH__', basePath)
+        // JSON.stringify injects a properly-quoted (and escaped) string literal.
+        // The template carries these placeholders unquoted.
+        .replaceAll('__MANIFEST_URL__', JSON.stringify(manifestUrl))
+        .replaceAll('__BASE_PATH__', JSON.stringify(basePath))
         .replaceAll('__APP_COMPONENT_NAME__', name)
         .replaceAll('__APP_COMPONENT_LOADER_NAME__', `${name}Loader`)
         .replaceAll('__SCRIPT_LOADER__', scriptLoader)
