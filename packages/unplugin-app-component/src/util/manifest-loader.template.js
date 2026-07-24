@@ -263,6 +263,49 @@
             });
         },
         /**
+         * Preload a dependency chunk without executing it.
+         *
+         * Dependency chunks must NOT be evaluated as their own `<script type="module">`
+         * roots: rolldown emits a self-referential runtime-helper chunk, and promoting
+         * every dependency to a graph root trips its circular import so a bundler helper
+         * (e.g. `__exportAll`) is called before it is defined. Instead we only execute the
+         * entry (see `load`/`reload`) and let native ESM resolve the dependency graph from
+         * that single root. This `<link rel="modulepreload">` just fetches each chunk in
+         * parallel so it is warm in the module cache by the time the entry imports it.
+         *
+         * @param {object|string} script
+         */
+        preloadScript: function (script) {
+            if (typeof script === 'string') {
+                script = { src: script };
+            }
+
+            if (this.isAssetLoaded(script)) {
+                logger.info(`Script already preloaded: ${script.file || script.src}`);
+                return;
+            }
+
+            const baseUrl = getBaseUrl();
+            const scriptUrl = script.file || script.src;
+            const href = resolveUrl(
+                scriptUrl.startsWith('/') ? scriptUrl : `${baseUrl}/${scriptUrl}`
+            );
+
+            const linkId = createRandomId('modulepreload');
+            script.id = linkId;
+
+            const link = document.createElement('link');
+            link.id = linkId;
+            link.rel = 'modulepreload';
+            link.href = href;
+            // Module scripts are fetched in CORS mode; match it so the preload is reused
+            // instead of triggering a second network request when the entry imports it.
+            link.crossOrigin = 'anonymous';
+            document.head.appendChild(link);
+
+            logger.info(`Script preloaded: ${scriptUrl}`);
+        },
+        /**
          * Load a stylesheet for given linkHref
          *
          * @param {*} stylesheet
@@ -449,10 +492,13 @@
             for (const entry of this.scripts) {
                 const chunks = this.resolveChunks(entry);
                 for (const chunk of chunks) {
-                    await this.loadScript(chunk);
+                    // Preload (fetch) deps only — never execute them as module roots.
+                    this.preloadScript(chunk);
                 }
 
-                // Load main entry script
+                // Only the entry runs as `<script type="module">`; native ESM pulls in
+                // the preloaded dependency chunks and resolves their import graph
+                // (including rolldown's runtime-helper chunk) in the correct order.
                 await this.loadScript(entry);
             }
 
@@ -478,10 +524,13 @@
                 for (const entry of this.scripts) {
                     const chunks = this.resolveChunks(entry);
                     for (const chunk of chunks) {
-                        await this.loadScript(chunk);
+                        // Preload (fetch) deps only — never execute them as module roots.
+                        this.preloadScript(chunk);
                     }
 
-                    // Load main entry script
+                    // Only the entry runs as `<script type="module">`; native ESM pulls in
+                    // the preloaded dependency chunks and resolves their import graph
+                    // (including rolldown's runtime-helper chunk) in the correct order.
                     await this.loadScript(entry);
                 }
             } catch (error) {}
