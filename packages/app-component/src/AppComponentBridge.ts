@@ -41,6 +41,12 @@ export default class AppComponentBridge {
     // Vue App instance
     private vueApp: App | null = null;
 
+    // Pending create() run, shared by concurrent callers
+    private creating: Promise<void> | null = null;
+
+    // Whether mount() has been accepted and not yet undone by unmount()
+    private mounted: boolean = false;
+
     // HTML element associated with the component
     private element: AppComponentHtmlElement | null = null;
 
@@ -83,11 +89,21 @@ export default class AppComponentBridge {
     // Lifecycle methods
 
     /**
-     * Create the app component
+     * Create the app component. Concurrent calls share the same run.
      *
      * @returns {Promise<void>}
      */
-    public async create(): Promise<void> {
+    public create(): Promise<void> {
+        if (!this.creating) {
+            this.creating = this.runCreate().finally(() => {
+                this.creating = null;
+            });
+        }
+
+        return this.creating;
+    }
+
+    private async runCreate(): Promise<void> {
         if (!this.element) {
             this._logger.error(`Element not set for app component: ${this.name}`);
             return;
@@ -169,11 +185,21 @@ export default class AppComponentBridge {
     }
 
     /**
-     * Mount the app component
+     * Mount the app component. A mount while already mounted is refused
+     * without touching props or emitting hooks; call unmount() first.
      *
      * @returns {Promise<void>}
      */
     public async mount(props?: { [key: string]: unknown }): Promise<void> {
+        if (this.mounted) {
+            this._logger.warn(
+                `App component ${this.name} is already mounted, ignoring mount(). Call unmount() first.`
+            );
+            return;
+        }
+
+        this.mounted = true;
+
         await this.hooks.emit('mounting', this, this.vueApp);
 
         // Logic to mount the app component
@@ -181,11 +207,13 @@ export default class AppComponentBridge {
 
         if (!this.element) {
             this._logger.error(`Element not set for app component: ${this.name}`);
+            this.mounted = false;
             return;
         }
 
         if (!this.vueApp) {
             this._logger.error(`Vue app not created for component: ${this.name}`);
+            this.mounted = false;
             return;
         }
 
@@ -210,6 +238,11 @@ export default class AppComponentBridge {
      * @returns {Promise<void>}
      */
     public async unmount(): Promise<void> {
+        // A create() still in flight would otherwise leave a fresh app behind
+        if (this.creating) {
+            await this.creating;
+        }
+
         await this.hooks.emit('unmounting', this);
         // Logic to destroy the app component
         this._logger.debug(`Destroying app component: ${this.name}`);
@@ -222,6 +255,8 @@ export default class AppComponentBridge {
             this.vueApp.unmount();
             this.vueApp = null;
         }
+
+        this.mounted = false;
 
         // Remove the inner dom of the element
         if (this.element) {
@@ -281,10 +316,10 @@ export default class AppComponentBridge {
      * @param {boolean} [once=false] - If true, the callback will be called only once.
      * @throws {Error} If the hook name is invalid.
      * @memberof AppComponentBridge
-     * @return {void}
+     * @return {() => void} Removes the callback again.
      */
-    public on(hookName: string, callback: (data?: any) => void, once: boolean = false): void {
-        this.hooks.on(hookName, callback, once);
+    public on(hookName: string, callback: (data?: any) => void, once: boolean = false): () => void {
+        return this.hooks.on(hookName, callback, once);
     }
 
     /**

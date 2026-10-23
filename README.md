@@ -249,13 +249,13 @@ bridge.emit('custom-event', payload);
 
 #### Bridge methods
 
-- `create(): Promise<void>` — create the underlying Vue app.
-- `mount(props?): Promise<void>` — mount and optionally merge additional props.
-- `unmount(): Promise<void>` — unmount and clean up external hooks.
+- `create(): Promise<void>` — create the underlying Vue app. Concurrent calls share one run.
+- `mount(props?): Promise<void>` — mount and optionally merge additional props. Ignored with a warning while already mounted; call `unmount()` first.
+- `unmount(): Promise<void>` — unmount and clean up external hooks. Waits for a `create()` still in flight.
 - `recreate(): void` — rebuild DOM and recreate the Vue app.
 - `created(): boolean` — whether the Vue app has been created.
 - `getName(): string` — get the PascalCase name.
-- `on(name, callback, once?)` / `off(name, callback)` — manage hook callbacks.
+- `on(name, callback, once?)` / `off(name, callback)` — manage hook callbacks. `on()` returns a function that removes the callback.
 - `emit(name, ...args)` / `trigger(name, ...args)` — emit hooks.
 
 ## Composables
@@ -344,6 +344,14 @@ The shipped `@mindtwo/app-component-nuxt-scripts` adapter wraps `useScript()` fr
 
 ```ts
 export type ScriptLoader = (script: { src: string; id?: string }) => Promise<void>;
+```
+
+The loader's `onLoad`, `onEntryLoading` and `onEntryLoaded` return an unsubscribe function. Call it when the host page that registered the callback goes away, so a load finishing later doesn't mount the component for a page that no longer exists:
+
+```ts
+const unsubscribe = window.MyAppComponentLoader.onLoad(() => mountForThisPage());
+
+onBeforeUnmount(unsubscribe);
 ```
 
 ## Packages
