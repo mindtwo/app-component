@@ -72,7 +72,8 @@ export class ComponentHooks extends Hookable {
 
     private hookableName?: string;
 
-    private _externalHooks: { [key: string]: HookCallback } = {};
+    // Unregister functions of every external callback, removed on unmount
+    private _externalHooks: Array<() => void> = [];
 
     constructor(hookableName?: string, debug: boolean = false) {
         super();
@@ -93,25 +94,24 @@ export class ComponentHooks extends Hookable {
      * @param {AnyHookName} hookName - The name of the hook.
      * @param {HookCallback} callback - The callback function to register.
      * @param {boolean} [once=false] - If true, the callback will be called only once.
-     * @return {void}
+     * @return {() => void} Removes the callback again.
      */
-    public on(hookName: AnyHookName, callback: HookCallback, once?: boolean): void {
+    public on(hookName: AnyHookName, callback: HookCallback, once?: boolean): () => void {
         if (!isValidComponentHook(hookName)) {
             this._logger.warn(`Invalid hook name: ${hookName}. The callback may not be called.`);
         }
 
         const formattedHookName = this.formatHookName(hookName);
 
-        if (once) {
-            this.hookOnce(formattedHookName, callback);
-            return;
-        }
-
-        this.hook(formattedHookName, callback);
+        const unregister = once
+            ? this.hookOnce(formattedHookName, callback)
+            : this.hook(formattedHookName, callback);
 
         if (!isValidComponentHook(hookName)) {
-            this._externalHooks[hookName] = callback;
+            this._externalHooks.push(unregister);
         }
+
+        return unregister;
     }
 
     /**
@@ -165,8 +165,11 @@ export class ComponentHooks extends Hookable {
     }
 
     public removeExternalHooks(): void {
-        this.removeHooks(this._externalHooks);
-        this._externalHooks = {};
+        for (const unregister of this._externalHooks) {
+            unregister();
+        }
+
+        this._externalHooks = [];
     }
 
     private formatHookName(hookName: AnyHookName): string {

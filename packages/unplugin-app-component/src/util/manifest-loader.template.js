@@ -114,13 +114,24 @@
             }
 
             this.hooks[hookName].push(callback);
+
+            // Unsubscribe: lets a host that went away drop its callback
+            return () => {
+                const callbacks = this.hooks[hookName];
+                const index = callbacks ? callbacks.indexOf(callback) : -1;
+
+                if (index !== -1) {
+                    callbacks.splice(index, 1);
+                }
+            };
         },
         /**
          * Call a hook with the provided name and arguments.
          */
         _callHooks: function (hookName, ...args) {
             if (this.hooks[hookName]) {
-                this.hooks[hookName].forEach((callback) => callback(...args));
+                // Copy so callbacks may unsubscribe while being called
+                this.hooks[hookName].slice().forEach((callback) => callback(...args));
             }
         },
         /**
@@ -153,28 +164,31 @@
          * Register a callback to be called when the manifest loading is completed.
          *
          * @param {Function} callback - The callback function to call when the manifest is loaded.
+         * @returns {Function} - Removes the callback again.
          * @throws {Error}
          */
         onLoad: function (callback) {
-            this._registerHook('load', callback);
+            return this._registerHook('load', callback);
         },
         /**
          * Register a callback to be called when an entry is loaded
          *
          * @param {Function} callback - The callback function to call when the manifest is loaded.
+         * @returns {Function} - Removes the callback again.
          * @throws {Error}
          */
         onEntryLoading: function (callback) {
-            this._registerHook('entryLoading', callback);
+            return this._registerHook('entryLoading', callback);
         },
         /**
          * Register a callback to be called when an entry of the manifest is loaded.
          *
          * @param {Function} callback - The callback function to call when a part is loaded.
+         * @returns {Function} - Removes the callback again.
          * @throws {Error}
          */
         onEntryLoaded: function (callback) {
-            this._registerHook('entryLoaded', callback);
+            return this._registerHook('entryLoaded', callback);
         },
         /**
          * Check if the asset is already loaded.

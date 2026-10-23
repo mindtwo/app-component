@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import vm from 'node:vm';
@@ -17,6 +17,8 @@ interface Loader {
     loadScript: (script: any) => Promise<any>;
     load: () => Promise<void>;
     isLoaded: boolean;
+    loaded: () => void;
+    onLoad: (callback: () => void) => () => void;
 }
 
 interface FakeElement {
@@ -309,5 +311,49 @@ describe('manifest-loader runtime: load ordering', () => {
             (el) => el.tagName === 'LINK' && el.href === 'http://localhost/assets/shared.js'
         );
         expect(sharedLinks).toHaveLength(1);
+    });
+});
+
+describe('manifest-loader runtime: hooks', () => {
+    let loader: Loader;
+
+    beforeEach(() => {
+        loader = loadTemplate().loader;
+    });
+
+    it('does not call a load callback after it unsubscribed', () => {
+        const stale = vi.fn();
+        const active = vi.fn();
+
+        const unsubscribe = loader.onLoad(stale);
+        loader.onLoad(active);
+        unsubscribe();
+        loader.loaded();
+
+        expect(stale).not.toHaveBeenCalled();
+        expect(active).toHaveBeenCalledTimes(1);
+    });
+
+    it('lets a callback unsubscribe while the hook is running', () => {
+        const second = vi.fn();
+        let unsubscribeFirst = () => {};
+
+        unsubscribeFirst = loader.onLoad(() => unsubscribeFirst());
+        loader.onLoad(second);
+        loader.loaded();
+
+        expect(second).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps other callbacks when unsubscribing twice', () => {
+        const other = vi.fn();
+
+        const unsubscribe = loader.onLoad(() => {});
+        loader.onLoad(other);
+        unsubscribe();
+        unsubscribe();
+        loader.loaded();
+
+        expect(other).toHaveBeenCalledTimes(1);
     });
 });
